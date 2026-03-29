@@ -11,4 +11,4 @@ def create_app():
     # CORS(app, origins=["http://localhost:5173/"])
     # CORS(app, origins=["https://ireporter-xi.vercel.app/"])
     
-    return app
+    return app 
