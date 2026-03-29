@@ -9,8 +9,8 @@ class Record(db.Model, SerializerMixin):
     
     id=db.Column(db.Integer, primary_key=True)
     user_id=db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    type=db.Column(db.Enum('red flag', 'intervention', name='record_tyoe'), nullable=False)
-    title=db.Column(db.String, nullable=False)
+    type=db.Column(db.Enum('red flag', 'intervention', name='record_type'), nullable=False)
+    title=db.Column(db.String(150), nullable=False)
     description=db.Column(db.Text, nullable=False)
     status=db.Column(db.Enum('pending', 'under investigation', 'rejected', 'resolved', name='record_status'), default='pending')
     latitude=db.Column(db.Float)
@@ -18,8 +18,8 @@ class Record(db.Model, SerializerMixin):
     created_at=db.Column(db.DateTime, server_default=db.func.now())
     updated_at=db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
     
-    images=db.relationship('Image', backref='record', cascade='all, delete-orphan')
-    videos=db.relationship('Video', backref='record', cascade='all, delete-orphan')
+    # images=db.relationship('Image', backref='record', cascade='all, delete-orphan')
+    # videos=db.relationship('Video', backref='record', cascade='all, delete-orphan')
     
     @validates('type')
     def validate_type(self,key,type):
@@ -37,12 +37,7 @@ class Record(db.Model, SerializerMixin):
     
     @validates('title', 'description')
     def validate_fields(self,key,value):
-        if key=='title':
+        if key=='title' or key=='description':
             if not value:
-                raise ValueError('Title needs to be present')
-            return value if len(value)>200 else 'Title needs to be at least 200 characters long'
-        
-        elif key=='description':
-            if not value:
-                raise ValueError('Description needs to be present')
-            return value
+                raise ValueError(f'{key.capitalize()} needs to be present')
+        return value
