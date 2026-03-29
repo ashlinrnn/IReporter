@@ -20,3 +20,29 @@ class Record(db.Model, SerializerMixin):
     
     images=db.relationship('Image', backref='record', cascade='all, delete-orphan')
     videos=db.relationship('Video', backref='record', cascade='all, delete-orphan')
+    
+    @validates('type')
+    def validate_type(self,key,type):
+        types=['red flag', 'intervention']
+        if not type or type not in types:
+            raise ValueError('Type needs to be present can only be either red flag or intevention')
+        return type
+    
+    @validates('status')
+    def validate_status(self,key,status):
+        status_accepted=['pending', 'under investigation', 'rejected', 'resolved']
+        if not status or status not in status_accepted:
+            raise ValueError('Status needs to be present and can only be either pending, under investigation, rejected or resolved')
+        return status
+    
+    @validates('title', 'description')
+    def validate_fields(self,key,value):
+        if key=='title':
+            if not value:
+                raise ValueError('Title needs to be present')
+            return value if len(value)>200 else 'Title needs to be at least 200 characters long'
+        
+        elif key=='description':
+            if not value:
+                raise ValueError('Description needs to be present')
+            return value
