@@ -10,8 +10,8 @@ class AllResource(Resource):
         self.rules=rules
     
     def get(self):
-        per_page=int(request.agrs.get('per_page',10))
-        page=int(request.agrs.get('page',1))
+        per_page=int(request.args.get('per_page',10))
+        page=int(request.args.get('page',1))
         
         try:
             query=self.Model.query.limit(per_page).offset((page-1)*per_page)
