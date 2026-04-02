@@ -18,8 +18,8 @@ class Record(db.Model, SerializerMixin):
     created_at=db.Column(db.DateTime, server_default=db.func.now())
     updated_at=db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
     
-    # images=db.relationship('Image', backref='record', cascade='all, delete-orphan')
-    # videos=db.relationship('Video', backref='record', cascade='all, delete-orphan')
+    images=db.relationship('Image', backref='record', cascade='all, delete-orphan')
+    videos=db.relationship('Video', backref='record', cascade='all, delete-orphan')
     
     @validates('type')
     def validate_type(self,key,type):
