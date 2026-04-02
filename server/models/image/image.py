@@ -4,9 +4,9 @@ from ...config import db
 
 class Image(db.Model, SerializerMixin):
     
-    __tablenamename__ = "images" 
+    __tablenamename__ = "videos" 
 
-    serialize_rules = ('-record.images')
+    serialize_rules = ('-record.videos')
 
     id = db.Column(db.Integer, primary_key=True)
     record_id = db.Column(db.Integer, db.ForeignKey("reports.id"), nullable= False)
