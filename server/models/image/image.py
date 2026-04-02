@@ -9,7 +9,7 @@ class Image(db.Model, SerializerMixin):
     serialize_rules = ('-record.images')
 
     id = db.Column(db.Integer, primary_key=True)
-    record_id = db.Column(db.Integer, db.ForeignKey("recors.id"), nullable= False)
+    record_id = db.Column(db.Integer, db.ForeignKey("reports.id"), nullable= False)
     image_url = db.Column(db.Text, nullable = False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
