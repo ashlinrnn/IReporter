@@ -3,7 +3,7 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
 
 class Record(db.Model, SerializerMixin):
-    __tablename__='reports'
+    __tablename__='records'
     
     serialize_rules=('-images.record', '-videos.record',)
     
