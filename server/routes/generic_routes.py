@@ -1,10 +1,5 @@
-from flask import Blueprint
-from flask_restful import Api
+from .create_blueprint import api_v1
 from ..services.generic_services import *
-
-api_pb=Blueprint('api_bp',__name__)
-api_v1=Api(api_pb, prefix='/api/v1')
-
 
 def create_routes(endpoint,model,resource,rules=[]):
     
