@@ -42,7 +42,7 @@ def get_current_user():
     token=auth_header.split(' ')[1]
     return get_user_from_token(token)
 
-def login_needed(f):
+def login_required(f):
     
     @wraps(f)
     def decorated(*args, **kwargs):

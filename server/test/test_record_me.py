@@ -20,7 +20,7 @@ def client(app):
         db.session.remove()
         db.drop_all()
 
-def create_user_and_record(client, is_admin=False, status='pending'):
+def create_user_and_record(is_admin=False, status='pending'):
     "Helper to create a user and a record, return (user, record, token)."
     user = User(
         username='testuser',
@@ -59,7 +59,7 @@ def test_patch_record_with_invalid_token(client):
 def test_patch_record_non_owner(client):
     "PATCH by non-owner should return 403."
     
-    user1, record, token1 = create_user_and_record(client)
+    user1, record, token1 = create_user_and_record()
     
     user2 = User(username='other', email='other@example.com', password_hash='hash')
     db.session.add(user2)
@@ -73,7 +73,7 @@ def test_patch_record_non_owner(client):
 
 def test_patch_record_owner_pending(client):
     "PATCH by owner when status='pending' should succeed."
-    user, record, token = create_user_and_record(client, status='pending')
+    user, record, token = create_user_and_record( status='pending')
     headers = {'Authorization': f'Bearer {token}'}
     new_title = 'Updated Title'
     response = client.patch(f'/api/v1/records/me/{record.id}', headers=headers, json={'title': new_title})
@@ -86,7 +86,7 @@ def test_patch_record_owner_pending(client):
 
 def test_patch_record_owner_not_pending(client):
     "PATCH by owner when status is not pending (e.g., 'under investigation') should be forbidden."
-    user, record, token = create_user_and_record(client, status='under investigation')
+    user, record, token = create_user_and_record( status='under investigation')
     headers = {'Authorization': f'Bearer {token}'}
     response = client.patch(f'/api/v1/records/me/{record.id}', headers=headers, json={'title': 'cant change'})
     assert response.status_code == 403
@@ -94,7 +94,7 @@ def test_patch_record_owner_not_pending(client):
 
 def test_delete_record_owner_pending(client):
     " DELETE by owner when pending should succeed."
-    user, record, token = create_user_and_record(client, status='pending')
+    user, record, token = create_user_and_record( status='pending')
     headers = {'Authorization': f'Bearer {token}'}
     response = client.delete(f'/api/v1/records/me/{record.id}', headers=headers)
     assert response.status_code == 204
@@ -104,7 +104,7 @@ def test_delete_record_owner_pending(client):
 
 def test_delete_record_owner_not_pending(client):
     " DELETE by owner when status not pending should be forbidden."
-    user, record, token = create_user_and_record(client, status='resolved')
+    user, record, token = create_user_and_record( status='resolved')
     headers = {'Authorization': f'Bearer {token}'}
     response = client.delete(f'/api/v1/records/me/{record.id}', headers=headers)
     assert response.status_code == 403
@@ -113,7 +113,7 @@ def test_delete_record_owner_not_pending(client):
 
 def test_delete_record_non_owner(client):
     " DELETE by non-owner should return 403."
-    user1, record, token1 = create_user_and_record(client)
+    user1, record, token1 = create_user_and_record()
     user2 = User(username='other', email='other@example.com', password_hash='hash')
     db.session.add(user2)
     db.session.commit()
@@ -129,4 +129,89 @@ def test_jwt_protection_on_missing_user(client):
     headers = {'Authorization': f'Bearer {fake_token}'}
     response = client.patch('/api/v1/records/me/1', headers=headers, json={'title': 'x'})
     
+    assert response.status_code == 401
+    
+def test_admin_can_change_status(client):
+    """Admin can change the status of any record via admin endpoint."""
+    # Create a record owned by a regular user
+    regular_user, record, token = create_user_and_record(is_admin=False, status='pending')
+    user_headers = {'Authorization': f'Bearer {token}'}
+    # Create an admin user
+    admin = User(
+        username='admin',
+        email='admin@example.com',
+        password_hash='admin_hash',
+        is_admin=True
+    )
+    db.session.add(admin)
+    db.session.commit()
+    admin_token = create_token(admin.id)
+    headers = {'Authorization': f'Bearer {admin_token}'}
+    
+    response = client.patch(
+        f'/api/v1/admin/records/{record.id}/status',
+        headers=headers,
+        json={'status': 'under investigation'}
+    )
+    assert response.status_code == 200
+    updated_record = db.session.get(Record, record.id)
+    assert updated_record.status == 'under investigation'
+    
+    # Try another status change
+    response = client.patch(
+        f'/api/v1/admin/records/{record.id}/status',
+        headers=headers,
+        json={'status': 'resolved'}
+    )
+    assert response.status_code == 200
+    updated_record = db.session.get(Record, record.id)
+    assert updated_record.status == 'resolved'
+
+def test_admin_cannot_set_invalid_status(client):
+    """Admin endpoint should reject invalid status values."""
+    admin = User(
+        username='admin',
+        email='admin@example.com',
+        password_hash='admin_hash',
+        is_admin=True
+    )
+    db.session.add(admin)
+    db.session.commit()
+    admin_token = create_token(admin.id)
+    headers = {'Authorization': f'Bearer {admin_token}'}
+    record = Record(
+        user_id=admin.id,
+        type='red flag',
+        title='Test',
+        description='Desc',
+        status='pending'
+    )
+    db.session.add(record)
+    db.session.commit()
+    
+    response = client.patch(
+        f'/api/v1/admin/records/{record.id}/status',
+        headers=headers,
+        json={'status': 'invalid_status'}
+    )
+    assert response.status_code == 400
+
+def test_regular_user_cannot_use_admin_endpoint(client):
+    """A regular user trying to use the admin status endpoint gets 403."""
+    user, record, token = create_user_and_record(is_admin=False, status='pending')
+    headers = {'Authorization': f'Bearer {token}'}
+    response = client.patch(
+        f'/api/v1/admin/records/{record.id}/status',
+        headers=headers,
+        json={'status': 'resolved'}
+    )
+    assert response.status_code == 403
+
+def test_admin_endpoint_requires_authentication(client):
+    """No token → 401."""
+    user, record, _ = create_user_and_record(is_admin=False, status='pending')
+    response = client.patch(
+        f'/api/v1/admin/records/{record.id}/status',
+        json={'status': 'resolved'}
+    )
     assert response.status_code == 401

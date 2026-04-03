@@ -7,3 +7,9 @@ api_v1.add_resource(
     '/records/me/<int:id>',
     endpoint='/records/me/<int:id>',
 )
+
+api_v1.add_resource(
+    AdminRecordResource,
+    '/admin/records/<int:id>/status',
+    endpoint='/admin/records/<int:id>/status'
+)

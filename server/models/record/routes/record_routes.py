@@ -1,12 +1,12 @@
 from flask import request,g, make_response
 from flask_restful import Resource
-from ....utils.auth import login_needed, admin_required, can_edit_record
+from ....utils.auth import login_required, admin_required, can_edit_record
 from ... import Record
 from ....config import db
 from werkzeug.exceptions import Forbidden
 
 class RecordResource(Resource):
-    @login_needed
+    @login_required
     def patch(self,id):
         record=db.session.get(Record,id)
         if not record:
@@ -27,7 +27,7 @@ class RecordResource(Resource):
             db.session.rollback()
             return {'error':[str(e)]}
     
-    @login_needed
+    @login_required
     def delete(self,id):
         record=db.session.get(Record,id)
         if not record:
@@ -39,3 +39,26 @@ class RecordResource(Resource):
         db.session.commit()
         
         return make_response({},204)
+
+class AdminRecordResource(Resource):
+    @admin_required 
+    def patch(self, id):
+        record = db.session.get(Record, id)
+        if not record:
+            return {'error': 'Record not found!'}, 404
+        
+        data = request.get_json()
+        if 'status' not in data:
+            return {'error': 'Only status field can be updated'}, 400
+        new_status = data['status']
+
+        try:
+            setattr(record, 'status', new_status)
+            db.session.commit()
+            return make_response({'data': record.to_dict()}, 200)
+        except ValueError as e:
+            
+            return {'error': str(e)}, 400
+        except Exception as e:
+            db.session.rollback()
+            return {'error': [str(e)]}, 400

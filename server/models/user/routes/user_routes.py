@@ -2,7 +2,7 @@
 from flask_restful import Resource
 from flask import request, g
 from werkzeug.security import generate_password_hash, check_password_hash
-from ....utils.auth import create_token, login_needed
+from ....utils.auth import create_token, login_required
 from ....models import User
 from ....config import db
 
@@ -36,7 +36,7 @@ class LoginResource(Resource):
         return {'token': token, 'user': user.to_dict()}, 200
 
 class LogoutResource(Resource):
-    @login_needed
+    @login_required
     def post(self):
         # For JWT stored on client, "logout" is purely client‑side.
         return {'message': 'Logged out'}, 200
