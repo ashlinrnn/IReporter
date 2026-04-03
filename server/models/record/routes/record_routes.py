@@ -3,6 +3,7 @@ from flask_restful import Resource
 from ....utils.auth import login_needed, admin_required, can_edit_record
 from ... import Record
 from ....config import db
+from werkzeug.exceptions import Forbidden
 
 class RecordResource(Resource):
     @login_needed
@@ -15,6 +16,8 @@ class RecordResource(Resource):
         
         for field,value in request.json.items():
             if hasattr(record,field):
+                if field =='status':
+                    raise Forbidden('Admin privileges required')
                 setattr(record,field,value)
         
         try:
@@ -24,6 +27,7 @@ class RecordResource(Resource):
             db.session.rollback()
             return {'error':[str(e)]}
     
+    @login_needed
     def delete(self,id):
         record=db.session.get(Record,id)
         if not record:

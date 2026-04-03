@@ -12,12 +12,12 @@ def create_token(user_id):
         'user_id':user_id
     }
     
-    token=jwt.encode(payload,current_app.config['FLASK_SECRET_KEY'], algorithm='HS256')
+    token=jwt.encode(payload,current_app.config['SECRET_KEY'], algorithm='HS256')
     return token
 
 def decode_token(token):
     try:
-        payload=jwt.decode(token,current_app.config['FLASK_SECRET_KEY'],algorithmS=['HS256'])
+        payload=jwt.decode(token,current_app.config['SECRET_KEY'],algorithms=['HS256'])
         return payload
     except jwt.InvalidTokenError:
         return None
@@ -48,7 +48,7 @@ def login_needed(f):
     def decorated(*args, **kwargs):
         user=get_current_user()
         if not user:
-            raise Unauthorized('Authorization required')
+            raise Unauthorized('Authentication required')
         
         g.current_user=user
         return f(*args,**kwargs)
@@ -59,7 +59,7 @@ def admin_required(f):
     def decorator(*args,**kwargs):
         user=get_current_user()
         if not user:
-            raise Unauthorized('Authorization required')
+            raise Unauthorized('Authentication required')
         if not user.is_admin:
             raise Forbidden('Admin privileges required')
         g.current_user=user

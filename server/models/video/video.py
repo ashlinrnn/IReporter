@@ -11,7 +11,7 @@ class Video(db.Model, SerializerMixin):
     video_url = db.Column(db.Text, nullable = False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
-    record = db.relationship('Record', backref=db.backref('videos', lazy=True)) 
+    # record = db.relationship('Record', backref=db.backref('videos', lazy=True)) 
 
     @validates('video_url')
     def validate_video_url(self, key, value):
