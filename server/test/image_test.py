@@ -3,15 +3,14 @@ from server.models.image.image import Image
 from server.models.record.record import Record
 from server.config import db
 
+class TestImage:
 
-
-
-def test_image_instance():
+   def test_image_instance(self):
     image = Image()
     assert isinstance(image, Image)
 
 
-def test_image_creation():
+   def test_image_creation():
     image = Image(
         image_url="img.png",
         record_id=1
@@ -22,7 +21,7 @@ def test_image_creation():
 
 
 
-def test_image_save(app):
+   def test_image_save(app):
 
     record = Record(
         title="Test",
@@ -45,7 +44,7 @@ def test_image_save(app):
 
 
 
-def test_image_requires_url():
+   def test_image_requires_url():
     with pytest.raises(ValueError):
         Image(
             image_url=None,
@@ -54,7 +53,7 @@ def test_image_requires_url():
 
 
 
-def test_image_belongs_to_record(app):
+   def test_image_belongs_to_record(app):
     record = Record(
         title="Test",
         description="Test description",
@@ -74,28 +73,28 @@ def test_image_belongs_to_record(app):
 
 
 
-def test_create_image(client):
+    def test_create_image(client):
     
-    client.post('/records', json={
+     client.post('/records', json={
         "title": "Test",
         "description": "Test description",
         "type": "red flag"
     })
 
-    response = client.post('/images', json={
+     response = client.post('/images', json={
         "image_url": "img.png",
         "record_id": 1
     })
 
-    assert response.status_code == 201
+     assert response.status_code == 201
 
 
-def test_get_images(client):
-    response = client.get('/images')
-    assert response.status_code == 200
+    def test_get_images(client):
+     response = client.get('/images')
+     assert response.status_code == 200
 
 
-def test_delete_image(client):
+   def test_delete_image(client):
     
     client.post('/records', json={
         "title": "Test",
