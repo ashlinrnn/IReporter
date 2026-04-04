@@ -25,7 +25,7 @@ def create_user(is_admin=False):
     user=User(
         username='testuser',
         email='test@example.com',
-        password_hash=generate_password_hash('hashed_pw'),
+        password='hashed_pw',
         is_admin=is_admin
     )
     db.session.add(user)
@@ -60,7 +60,7 @@ def test_login_nonexist_email(client):
     assert response.status_code==401
 
 def test_login_missing_credentials(client):
-    """miss email/password => 400"""
+    """miss email/password => 401"""
     response=client.post('/api/v1/auth/login',
                         json={'email':'a@123.com'})
     assert response.status_code==401
@@ -68,7 +68,7 @@ def test_login_missing_credentials(client):
 def test_signup_success(client):
     """valid 201"""
     response=client.post('/api/v1/auth/signup',
-                        json={'username':'newuser','email':'new@123.com', 'password':generate_password_hash('newpassword')})
+                        json={'username':'newuser','email':'new@123.com', 'password':'newpassword'})
     assert response.status_code==201
     data = response.json
     assert 'token'in data
@@ -101,3 +101,32 @@ def test_signup_duplicate_username(client):
         'password': 'pw'
     })
     assert response.status_code == 400
+    
+def test_auth_me_with_invalid_token(client):
+    """===> 401"""
+
+    headers={'Authorization':'Bearer invalid.token.here'}
+    response=client.get('/api/v1/auth/me', headers=headers)
+    assert response.status_code==401
+
+def test_auth_me_without_token(client):
+    """===> 401"""
+    response=client.get('/api/v1/auth/me')
+    
+    assert response.status_code==401
+
+def test_auth_me_with_valid_token(client):
+    user,token=create_user()
+    headers={'Authorization': f'Bearer {token}'}
+    response=client.get('/api/v1/auth/me',headers=headers)
+    
+    assert response.status_code==200
+    
+    data=response.json
+    
+    user_data=data.get('user')
+    assert user_data.get('id')==user.id
+    assert user_data.get('username')==user.username
+    assert user_data.get('email')==user.email
+    
+    assert 'password_hash' not in user_data

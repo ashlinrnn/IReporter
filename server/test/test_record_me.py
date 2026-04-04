@@ -25,7 +25,7 @@ def create_user_and_record(is_admin=False, status='pending'):
     user = User(
         username='testuser',
         email='test@example.com',
-        password_hash='hashed_pw',
+        password='hashed_pw',
         is_admin=is_admin
     )
     db.session.add(user)
