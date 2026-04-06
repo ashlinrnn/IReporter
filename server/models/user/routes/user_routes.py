@@ -1,7 +1,6 @@
 # server/blueprints/auth.py (or similar)
 from flask_restful import Resource
 from flask import request, g
-from werkzeug.security import generate_password_hash, check_password_hash
 from ....utils.auth import create_token, login_required
 from ....models import User
 from ....config import db
@@ -25,7 +24,7 @@ class SignupResource(Resource):
         user = User(
             username=username,
             email=email,
-            password_hash=generate_password_hash(password)
+            password=password
         )
         db.session.add(user)
         db.session.commit()
