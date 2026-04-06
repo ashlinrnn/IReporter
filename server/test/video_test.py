@@ -34,10 +34,9 @@ class TestVideo:
             video_url="video.mp4",
             record_id=record.id
         )
-        db.session.add(video)   # ✅ fixed
-        db.session.commit()
+        db.session.add(video)  
 
-        assert video.id is not None   # ✅ fixed
+        assert video.id is not None   
 
 
     def test_video_requires_url(self):
@@ -58,8 +57,7 @@ class TestVideo:
         db.session.commit()
 
         video = Video(
-            video_url="video.mp4",   # ✅ fixed
-            record_id=record.id
+            video_url="video.mp4",   
         )
         db.session.add(video)
         db.session.commit()

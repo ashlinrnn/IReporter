@@ -4,12 +4,15 @@ from server.config import db
 from server.models import User, Record
 from server.utils.auth import create_token
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def app():
-    app = create_app()
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['SECRET_KEY'] = 'test-secret-key'  
+    """Create a Flask app instance for testing"""
+    test_config={
+        'TESTING':True,
+        'SQLALCHEMY_DATABASE_URI':'sqlite:///:memory:',
+        'SECRET_KEY': 'test-secret-key'
+    }
+    app = create_app(test_config)
     return app
 
 @pytest.fixture
@@ -25,7 +28,7 @@ def create_user_and_record(is_admin=False, status='pending'):
     user = User(
         username='testuser',
         email='test@example.com',
-        password_hash='hashed_pw',
+        password='hashed_pw',
         is_admin=is_admin
     )
     db.session.add(user)

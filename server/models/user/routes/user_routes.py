@@ -36,10 +36,8 @@ class SignupResource(Resource):
 class LoginResource(Resource):
     def post(self):
         data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        user = User.query.filter_by(email=email).first()
-        if not user or not check_password_hash(user.password_hash, password):
+        user = User.query.filter_by(email=data.get('email')).first()
+        if not user or not user.authenticate(data.get('password')):
             return {'error': 'Invalid credentials'}, 401
         token = create_token(user.id)
         return {'token': token, 'user': user.to_dict()}, 200
@@ -49,3 +47,9 @@ class LogoutResource(Resource):
     def post(self):
         # For JWT stored on client, "logout" is purely client‑side.
         return {'message': 'Logged out'}, 200
+    
+class CurrentUserResource(Resource):
+    @login_required
+    def get(self):
+        # g.current_user is set by @login_required --remember
+        return {'user': g.current_user.to_dict()}, 200

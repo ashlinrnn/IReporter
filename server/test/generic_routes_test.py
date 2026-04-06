@@ -9,11 +9,12 @@ fake = Faker()
 @pytest.fixture(scope='session')
 def app():
     """Create a Flask app instance for testing"""
-    app = create_app()
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    test_config={
+        'TESTING':True,
+        'SQLALCHEMY_DATABASE_URI':'sqlite:///:memory:',
+        'SECRET_KEY': 'test-secret-key'
+    }
+    app = create_app(test_config)
     return app
 
 @pytest.fixture
