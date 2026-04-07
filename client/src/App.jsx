@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { RecordsProvider } from './app/context/RecordsContext';
 import Layout from './app/components/Layout';
 import Login from './app/pages/Login';
+import ForgotPassword from './app/pages/ForgotPassword';
 import SignUp from './app/pages/SignUp';
 import Home from './app/pages/Home';
 import Activity from './app/pages/Activity';
@@ -25,6 +26,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/home" element={<Layout />}>
             <Route index element={<Home />} />

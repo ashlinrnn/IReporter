@@ -1,14 +1,21 @@
+import { useState } from "react";
 import { useRecords } from "../context/RecordsContext";
-import { Shield } from "lucide-react";
+import { Shield, ChevronLeft, ChevronRight } from "lucide-react";
+
+const PER_PAGE = 5;
 
 export default function AdminDashboard() {
   const { records, updateStatus } = useRecords();
+  const [page, setPage] = useState(1);
 
   const stats = {
     redFlags: records.filter(r => r.status === "red-flag").length,
     pending: records.filter(r => r.status === "under investigation").length,
     resolved: records.filter(r => r.status === "resolved").length,
   };
+
+  const totalPages = Math.ceil(records.length / PER_PAGE);
+  const paginated = records.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <div className="space-y-8">
@@ -47,7 +54,7 @@ export default function AdminDashboard() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-            {records.map((record) => (
+            {paginated.map((record) => (
               <tr key={record.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                 <td className="p-6">
                   <p className="font-bold text-slate-900 dark:text-white">{record.title}</p>
@@ -79,6 +86,44 @@ export default function AdminDashboard() {
             ))}
           </tbody>
         </table>
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-700">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, records.length)} of {records.length}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30 hover:border-blue-500 transition-all"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                <button
+                  key={n}
+                  onClick={() => setPage(n)}
+                  className={`w-8 h-8 rounded-xl text-xs font-black transition-all ${
+                    page === n
+                      ? "bg-blue-600 text-white"
+                      : "bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-blue-500"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30 hover:border-blue-500 transition-all"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
