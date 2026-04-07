@@ -218,3 +218,32 @@ def test_admin_endpoint_requires_authentication(client):
         json={'status': 'resolved'}
     )
     assert response.status_code == 401
+
+def test_owner_cannot_update_record_when_not_pending(client):
+    """Owner cannot update record if status is not pending."""
+    # Create a record with status 'under investigation'
+    user, record, token = create_user_and_record(status='under investigation')
+    headers = {'Authorization': f'Bearer {token}'}
+    
+    response = client.patch(
+        f'/api/v1/records/me/{record.id}',
+        headers=headers,
+        json={'title': 'Attempted update'}
+    )
+    assert response.status_code == 403
+    assert 'Not allowed to edit this record' in response.get_data(as_text=True)
+    
+    # Verify the title did not change
+    record_in_db = db.session.get(Record, record.id)
+    assert record_in_db.title != 'Attempted update'
+
+def test_owner_cannot_delete_record_when_not_pending(client):
+    """Owner cannot delete record if status is not pending."""
+    # Create a record with status 'resolved'
+    user, record, token = create_user_and_record(status='resolved')
+    headers = {'Authorization': f'Bearer {token}'}
+    
+    response = client.delete(f'/api/v1/records/me/{record.id}', headers=headers)
+    assert response.status_code == 403
+    # Record should still exist
+    assert db.session.get(Record, record.id) is not None

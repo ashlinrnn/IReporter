@@ -4,6 +4,7 @@ from ....utils.auth import login_required, admin_required, can_edit_record
 from ... import Record
 from ....config import db
 from werkzeug.exceptions import Forbidden
+from ....services.email_service import send_status_update_email
 
 class RecordResource(Resource):
     @login_required
@@ -55,6 +56,18 @@ class AdminRecordResource(Resource):
         try:
             setattr(record, 'status', new_status)
             db.session.commit()
+            
+            try:
+                send_status_update_email(
+                    recipient_email=record.user.email,
+                    recipient_name=record.user.username,
+                    record_title=record.title,
+                    new_status=new_status
+                )
+            except Exception as e:
+                # Log the error but don't break the response
+                print(f"Email failed: {e}")
+            
             return make_response({'data': record.to_dict()}, 200)
         except ValueError as e:
             
