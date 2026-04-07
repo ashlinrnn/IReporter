@@ -47,7 +47,7 @@ export default function Layout() {
           </div>
           {!collapsed && (
             <h1 className="text-xl font-bold tracking-tighter text-slate-900 dark:text-slate-900 dark:text-white">
-              iReporter
+              IReporter
             </h1>
           )}
         </div>
@@ -110,8 +110,8 @@ export default function Layout() {
           >
             <ChevronLeft className={`transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`} />
           </button>
-          <div className="md:hidden font-black text-blue-600 text-xl">iR</div>
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">Secure Portal</div>
+          <div className="md:hidden font-black text-blue-600 text-xl">IR</div>
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">Expose. Dont Suppress</div>
         </header>
 
         {/* PAGE CONTENT */}

@@ -51,7 +51,7 @@ export default function SignUp() {
         {/* HEADER */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl font-black text-2xl mb-4">iR</div>
-          <h1 className="text-4xl font-black tracking-tight">iReporter</h1>
+          <h1 className="text-4xl font-black tracking-tight">IReporter</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2">Create your account</p>
         </div>
 
