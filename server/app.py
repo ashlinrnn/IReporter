@@ -13,6 +13,6 @@ def create_app(test_config=None):
     config_app(app)
     app.register_blueprint(api_pb)
     # CORS(app, origins=["http://localhost:5173/"])
-    # CORS(app, origins=["https://ireporter-xi.vercel.app/"])
+    # CORS(app, origins=["https://IReporter-xi.vercel.app/"])
     
     return app 

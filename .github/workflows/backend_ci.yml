@@ -40,7 +40,7 @@ jobs:
       - name: Run test with pytest
         env:
           #flask use test db
-          # DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ireporter_test
+          # DATABASE_URL: postgresql://postgres:postgres@localhost:5432/IReporter_test
           SECRET_KEY: ${{secrets.SECRET_KEY || 'test-secret-key'}}
         run: |
           pytest --maxfail=1 --disable-warnings -v

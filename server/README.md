@@ -13,8 +13,8 @@ Follow these steps to set up the project locally.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/ireporter.git
-cd ireporter
+git clone https://github.com/your-org/IReporter.git
+cd IReporter
 ```
 
 ## File Structure
@@ -31,9 +31,9 @@ cd ireporter
 │   ├── README.md
 │   ├── src
 │   └── vite.config.js
-├── ireporter_dbdiagram.io.png
-├── Ireporter.dbml
-├── ireporterDb.sql
+├── IReporter_dbdiagram.io.png
+├── IReporter.dbml
+├── IReporterDb.sql
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
@@ -102,7 +102,7 @@ sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 FLASK_APP=server.app
 FLASK_RUN_PORT=5020
 FLASK_DEBUG=True
-FLASK_SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@localhost:5432/ireporter_db #for development
+FLASK_SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@localhost:5432/IReporter_db #for development
 FLASK_SQLALCHEMY_TRACK_MODIFICATIONS=False
 FLASK_SECRET_KEY=your-secret-key
 FLASK_SESSION_PERMANENT=False
@@ -152,4 +152,4 @@ cd client; npm run dev
 
 - Relationship to Implement
   
-![erd_diagram](./ireporter_dbdiagram.io.png)
+![erd_diagram](./IReporter_dbdiagram.io.png)

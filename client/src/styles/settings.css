@@ -1,0 +1,13 @@
+.settings-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg);
+}
+
+.settings-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  max-width: 400px;
+}

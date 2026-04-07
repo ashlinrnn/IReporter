@@ -13,8 +13,8 @@ Follow these steps to set up the project locally.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/ireporter.git
-cd ireporter
+git clone https://github.com/your-org/IReporter.git
+cd IReporter
 ```
 
 ## File Structure
@@ -31,9 +31,9 @@ cd ireporter
 │   ├── README.md
 │   ├── src
 │   └── vite.config.js
-├── ireporter_dbdiagram.io.png
-├── Ireporter.dbml
-├── ireporterDb.sql
+├── IReporter_dbdiagram.io.png
+├── IReporter.dbml
+├── IReporterDb.sql
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
@@ -152,4 +152,4 @@ cd client; npm run dev
 
 - Relationship to Implement
   
-![erd_diagram](./ireporter_dbdiagram.io.png)
+![erd_diagram](./IReporter_dbdiagram.io.png)
