@@ -7,13 +7,10 @@ from werkzeug.security import generate_password_hash
 
 @pytest.fixture(scope='session')
 def app():
-    """Create a Flask app instance for testing"""
-    test_config={
-        'TESTING':True,
-        'SQLALCHEMY_DATABASE_URI':'sqlite:///:memory:',
-        'SECRET_KEY': 'test-secret-key'
-    }
-    app = create_app(test_config)
+    app = create_app()
+    app.config['TESTING'] = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['SECRET_KEY'] = 'test_super_long_flask_secret_key_123456'  
     return app
 
 @pytest.fixture
