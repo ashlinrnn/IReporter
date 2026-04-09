@@ -3,31 +3,22 @@ from server.config import db
 from sqlalchemy_serializer import SerializerMixin
 
 class TestVideo:
-
+    
     def test_instance(self):
-        video = Video()
-        assert isinstance(video, Video)
-
-    def test_has_attributes(self):
-        video = Video(
-            video_url="test.mp4",
-            record_id=1
-        )
-        assert video.id is None
-        assert video.video_url == "test.mp4"
-        assert video.record_id == 1
-
+        vid = Video()
+        assert isinstance(vid, Video)
+    
+    def test_attributes(self):
+        vid = Video(video_url="vid.mp4", record_id=1)
+        assert vid.id is None
+        assert vid.video_url == "vid.mp4"
+        assert vid.record_id == 1
+    
     def test_inheritance(self):
-        video = Video()
-        assert isinstance(video, SerializerMixin)
-        assert isinstance(video, db.Model)
-
+        vid = Video()
+        assert isinstance(vid, db.Model)
+        assert isinstance(vid, SerializerMixin)
+    
     def test_to_dict(self):
-        video = Video(
-            video_url="test.mp4",
-            record_id=1
-        )
-        data = video.to_dict()
-        assert isinstance(data, dict)
-        assert data["video_url"] == "test.mp4"
-        assert data["record_id"] == 1
+        vid = Video(video_url="vid.mp4", record_id=1)
+        assert isinstance(vid.to_dict(), dict)

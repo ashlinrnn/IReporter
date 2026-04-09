@@ -1,15 +1,7 @@
 from server.routes.create_blueprint import api_v1
-from .video_routes import VideoResource, VideoByID
+from server.routes.create_generic_routes import create_routes
+from server.models.video.video import Video
 
 
-# 👉 ALL videos (GET, POST)
-api_v1.add_resource(
-    VideoResource,
-    '/videos'
-)
 
-# 👉 ONE video (GET, DELETE, PATCH)
-api_v1.add_resource(
-    VideoByID,
-    '/videos/<int:id>'
-)
+create_routes('/videos', Video, 'video')

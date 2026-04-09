@@ -14,7 +14,7 @@ class Image(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
     serialize_only = ("id", "image_url", "record_id")
-    # record = db.relationship('Record', backref=db.backref('images', lazy=True)) 
+    #record = db.relationship('Record', backref=db.backref('images', lazy=True)) 
 
     @validates('image_url')
     def validate_image_url(self, key, value):
