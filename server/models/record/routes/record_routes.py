@@ -41,6 +41,27 @@ class RecordResource(Resource):
         
         return make_response({},204)
 
+class RecordCreateResource(Resource):
+    @login_required
+    def post(self):
+        data=request.get_json()
+        record=Record(
+            user_id=g.current_user.id,
+            title=data.get('title'),
+            description=data.get('description'),
+            type=data.get('type'),
+            latitude=data.get('latitude'),
+            longitude=data.get('longitude'),
+            status='pending'
+        )
+        try:
+            db.session.add(record)
+            db.session.commit()
+            return make_response({'data':record.to_dict()},201)
+        except Exception as e:
+            db.session.rollback()
+            return {'message':str(e)},400
+
 class AdminRecordResource(Resource):
     @admin_required 
     def patch(self, id):

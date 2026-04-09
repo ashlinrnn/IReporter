@@ -40,7 +40,7 @@ export const api = {
     fetch(`${BASE}/records/${id}`, { headers: headers() }),
 
   createRecord: (body) =>
-    fetch(`${BASE}/records`, {
+    fetch(`${BASE}/records/create`, {
       method: "POST",
       headers: headers(),
       body: JSON.stringify(body),

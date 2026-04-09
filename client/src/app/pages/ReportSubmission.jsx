@@ -43,7 +43,7 @@ export default function ReportSubmission() {
       };
 
       // 1. create record
-      const res = await fetch(`${API}/records`, {
+      const res = await fetch(`${API}/records/create`, {
         method: "POST",
         headers,
         body: JSON.stringify({

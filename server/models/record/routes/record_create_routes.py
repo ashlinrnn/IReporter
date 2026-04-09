@@ -13,3 +13,9 @@ api_v1.add_resource(
     '/admin/records/<int:id>/status',
     endpoint='/admin/records/<int:id>/status'
 )
+
+api_v1.add_resource(
+    RecordCreateResource,
+    '/records/create',
+    endpoint='/records/create'
+)
