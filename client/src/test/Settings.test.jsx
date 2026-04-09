@@ -36,9 +36,10 @@ describe('Settings Page', () => {
   })
 
   it('has theme toggle button', () => {
-    renderSettings()
-    expect(
-      screen.getByText('Switch to Light Mode') || screen.getByText('Switch to Dark Mode')
-    ).toBeInTheDocument()
-  })
+  renderSettings()
+  const toggleBtn = 
+    screen.queryByText('Switch to Light Mode') || 
+    screen.queryByText('Switch to Dark Mode')
+  expect(toggleBtn).toBeInTheDocument()
+})
 })
