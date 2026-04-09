@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import Map from '../components/Map';
-import { Camera, Video, Send, AlertCircle } from 'lucide-react';
+import { Camera, Video, Send, AlertCircle, CheckCircle } from 'lucide-react';
 import { useLocation } from "react-router-dom";
+
+const API = import.meta.env.VITE_API || "http://localhost:5000/api/v1";
 
 const validate = (formData, location) => {
   const errors = {};
@@ -22,23 +24,75 @@ export default function ReportSubmission() {
   const [timestamp] = useState(new Date());
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
     const errs = validate(formData, location);
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
+    setLoading(true);
 
-    const data = new FormData();
-    data.append('title', formData.title);
-    data.append('description', formData.description);
-    data.append('type', formData.type);
-    data.append('latitude', location[0]);
-    data.append('longitude', location[1]);
-    data.append('created_at', new Date().toISOString());
-    images.forEach(img => data.append('images', img));
-    if (video) data.append('video', video);
-    setSubmitted(true);
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      // 1. create record
+      const res = await fetch(`${API}/records`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          type: formData.type,
+          latitude: location[0],
+          longitude: location[1],
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to submit report");
+      }
+
+      const record = await res.json();
+      const record_id = record.id;
+
+      // 2. upload images
+      for (const img of images) {
+        const form = new FormData();
+        form.append("record_id", record_id);
+        form.append("image", img);
+        await fetch(`${API}/images`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+      }
+
+      // 3. upload video
+      if (video) {
+        const form = new FormData();
+        form.append("record_id", record_id);
+        form.append("video", video);
+        await fetch(`${API}/videos`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err.message || "Submission failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClass = (field) =>
@@ -49,14 +103,18 @@ export default function ReportSubmission() {
   if (submitted) return (
     <div className="max-w-md mx-auto mt-20 text-center space-y-4">
       <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto">
-        <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
+        <CheckCircle className="w-8 h-8 text-emerald-500" />
       </div>
       <h2 className="text-2xl font-black text-slate-900 dark:text-white">Report Submitted!</h2>
-      <p className="text-slate-500 dark:text-slate-400">Your report has been packaged and will be reviewed by authorities.</p>
+      <p className="text-slate-500 dark:text-slate-400">Your report has been sent and will be reviewed by authorities. You'll receive an email update.</p>
       <button
-        onClick={() => setSubmitted(false)}
+        onClick={() => {
+          setSubmitted(false);
+          setFormData({ title: '', description: '', type: 'red-flag' });
+          setLocation(null);
+          setImages([]);
+          setVideo(null);
+        }}
         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl transition-all"
       >
         Submit Another
@@ -121,6 +179,12 @@ export default function ReportSubmission() {
               <input type="file" hidden accept="video/*" onChange={e => setVideo(e.target.files[0])} />
             </label>
           </div>
+
+          {submitError && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              <AlertCircle size={14}/> {submitError}
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -135,9 +199,11 @@ export default function ReportSubmission() {
           )}
           <button
             onClick={handleSubmit}
-            className="w-full py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 transition-all"
+            disabled={loading}
+            className="w-full py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 transition-all"
           >
-            <Send size={20}/> SUBMIT TO AUTHORITIES
+            <Send size={20}/>
+            {loading ? "Submitting..." : "SUBMIT TO AUTHORITIES"}
           </button>
         </div>
       </div>
