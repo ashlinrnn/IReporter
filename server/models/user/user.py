@@ -7,7 +7,7 @@ class User(db.Model, SerializerMixin):
     
     __tablename__='users'
     
-    serialize_rules=('-records.user','-password_hash')
+    serialize_rules=('-records.user','-password_hash', '-id')
     
     id=db.Column(db.Integer, primary_key=True)
     username=db.Column(db.String, unique=True, nullable=False)
