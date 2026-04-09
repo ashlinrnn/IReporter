@@ -108,7 +108,7 @@ def seed_all():
     """Main seeding function."""
     app = create_app()
     with app.app_context():
-        db.drop_all()   # Optional: clean DB before seeding (remove if you want to keep existing)
+        db.drop_all() 
         db.create_all()
         users = seed_users()
         seed_records(users)
