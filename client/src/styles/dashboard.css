@@ -1,0 +1,25 @@
+.dashboard-container {
+  padding: 20px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.dash-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dash-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+}

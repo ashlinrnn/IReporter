@@ -18,3 +18,9 @@ api_v1.add_resource(
     '/auth/signup',
     endpoint='/auth/signup'
 )
+
+api_v1.add_resource(
+    CurrentUserResource,
+    '/auth/me',
+    endpoint='auth/me'
+)

@@ -28,6 +28,12 @@ class Record(db.Model, SerializerMixin):
             raise ValueError('Type needs to be present can only be either red flag or intevention')
         return type
     
+    @validates('user_id')
+    def validate_type(self,key,user_id):
+        if not user_id:
+            raise ValueError('User not verified!')
+        return user_id
+    
     @validates('status')
     def validate_status(self,key,status):
         status_accepted=['pending', 'under investigation', 'rejected', 'resolved']

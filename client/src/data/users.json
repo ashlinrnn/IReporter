@@ -1,0 +1,40 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "john_doe",
+      "email": "john.doe@example.com",
+      "password": "hashed_password_123",
+      "is_admin": false,
+      "created_at": "2025-01-15T08:30:00Z",
+      "updated_at": "2025-01-15T08:30:00Z"
+    },
+    {
+      "id": 2,
+      "username": "jane_smith",
+      "email": "jane.smith@example.com",
+      "password": "hashed_password_456",
+      "is_admin": true,
+      "created_at": "2025-01-10T10:15:00Z",
+      "updated_at": "2025-01-20T14:22:00Z"
+    },
+    {
+      "id": 3,
+      "username": "admin_user",
+      "email": "admin@IReporter.com",
+      "password": "hashed_password_789",
+      "is_admin": true,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": 4,
+      "username": "civic_reporter",
+      "email": "reporter@example.com",
+      "password": "hashed_password_321",
+      "is_admin": false,
+      "created_at": "2025-01-18T16:45:00Z",
+      "updated_at": "2025-01-18T16:45:00Z"
+    }
+  ]
+}

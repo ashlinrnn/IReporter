@@ -24,7 +24,7 @@ class AllResource(Resource):
                 'total':total_count
             },200)
         except Exception as e: 
-            return {'error':[str(e)]},400
+            return {'message':[str(e)]},400
     
     def post(self):
         item=self.Model()
@@ -37,7 +37,7 @@ class AllResource(Resource):
             return make_response({'data':item.to_dict(rules=self.rules)},201)
         except Exception as e:
             db.session.rollback()
-            return {'error':[str(e)]},400
+            return {'message':[str(e)]},400
     
 
 class SingleResource(Resource):
@@ -71,7 +71,7 @@ class SingleResource(Resource):
             return make_response({'data':item.to_dict()},200)
         except Exception as e:
             db.session.rollback()
-            return {'error':[str(e)]}
+            return {'message':[str(e)]}
     
     def delete(self,id):
         item = db.session.get(self.Model, id)

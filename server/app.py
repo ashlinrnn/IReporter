@@ -8,11 +8,18 @@ from .routes.create_blueprint import api_pb
 
 
 
-def create_app():
+def create_app(test_config=None):
     app=Flask(__name__)
+    if test_config:
+        app.config.update(test_config)
     config_app(app)
+    CORS(app, origins=[
+            "http://localhost:5173", #dev
+            "https://i-reporter-inky.vercel.app" #prod 
+        ],
+        supports_credentials=True
+        )
+    
     app.register_blueprint(api_pb)
-    # CORS(app, origins=["http://localhost:5173/"])
-    # CORS(app, origins=["https://ireporter-xi.vercel.app/"])
     
     return app 

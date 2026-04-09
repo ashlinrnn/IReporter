@@ -1,0 +1,45 @@
+.admin-container {
+  padding: 2rem;
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+.admin-header {
+  margin-bottom: 1rem;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  flex: 1;
+  padding: 1rem;
+  background: var(--card);
+  border-radius: 1rem;
+  text-align: center;
+}
+
+.card.red { color: var(--red); }
+.card.amber { color: var(--amber); }
+.card.green { color: var(--green); }
+
+table {
+  width: 100%;
+  background: var(--card);
+  border-collapse: collapse;
+}
+
+td, th {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}

@@ -1,0 +1,133 @@
+.home-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Map background */
+.home-map {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom right,
+    #1e293b,
+    #0f172a,
+    #1e293b
+  );
+}
+
+/* Grid overlay */
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  background-image:
+    linear-gradient(to right, #22d3ee 1px, transparent 1px),
+    linear-gradient(to bottom, #22d3ee 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Pins */
+.map-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.map-inner {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  height: 100%;
+}
+
+.map-pin {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.map-pin:hover {
+  transform: scale(1.2);
+}
+
+/* Search */
+.home-search {
+  position: absolute;
+  top: 1.5rem;
+  left: 1rem;
+  right: 1rem;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid #334155;
+  border-radius: 1rem;
+  height: 3.5rem;
+  padding: 0 1rem;
+}
+
+.search-box input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  padding-left: 2rem;
+}
+
+.search-box input::placeholder {
+  color: #6b7280;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  color: #9ca3af;
+}
+
+/* Actions */
+.home-actions {
+  position: absolute;
+  bottom: 5rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  flex: 1;
+  height: 4rem;
+  border: none;
+  border-radius: 1.5rem;
+  color: white;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+/* Variants */
+.btn.red {
+  background: #ef4444;
+}
+
+.btn.red:hover {
+  background: #dc2626;
+}
+
+.btn.amber {
+  background: #f59e0b;
+}
+
+.btn.amber:hover {
+  background: #d97706;
+}

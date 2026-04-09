@@ -4,7 +4,7 @@ from server.config import db
 from server.models import User, Record
 from server.utils.auth import create_token
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def app():
     app = create_app()
     app.config['TESTING'] = True
@@ -25,7 +25,7 @@ def create_user_and_record(is_admin=False, status='pending'):
     user = User(
         username='testuser',
         email='test@example.com',
-        password_hash='hashed_pw',
+        password='hashed_pw',
         is_admin=is_admin
     )
     db.session.add(user)
@@ -215,3 +215,32 @@ def test_admin_endpoint_requires_authentication(client):
         json={'status': 'resolved'}
     )
     assert response.status_code == 401
+
+def test_owner_cannot_update_record_when_not_pending(client):
+    """Owner cannot update record if status is not pending."""
+    # Create a record with status 'under investigation'
+    user, record, token = create_user_and_record(status='under investigation')
+    headers = {'Authorization': f'Bearer {token}'}
+    
+    response = client.patch(
+        f'/api/v1/records/me/{record.id}',
+        headers=headers,
+        json={'title': 'Attempted update'}
+    )
+    assert response.status_code == 403
+    assert 'Not allowed to edit this record' in response.get_data(as_text=True)
+    
+    # Verify the title did not change
+    record_in_db = db.session.get(Record, record.id)
+    assert record_in_db.title != 'Attempted update'
+
+def test_owner_cannot_delete_record_when_not_pending(client):
+    """Owner cannot delete record if status is not pending."""
+    # Create a record with status 'resolved'
+    user, record, token = create_user_and_record(status='resolved')
+    headers = {'Authorization': f'Bearer {token}'}
+    
+    response = client.delete(f'/api/v1/records/me/{record.id}', headers=headers)
+    assert response.status_code == 403
+    # Record should still exist
+    assert db.session.get(Record, record.id) is not None
