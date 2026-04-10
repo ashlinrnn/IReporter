@@ -46,16 +46,16 @@ jobs:
           pytest --maxfail=1 --disable-warnings -v
   
   #DEPLOY WHEN TEST PASS
-  # deploy: 
-  #   needs: test
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name=='push' && github.ref == 'refs/heads/main'
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  deploy: 
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name=='push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-  #     - name: Deploy backend on Render
-  #       env:
-  #         RENDER_DEPLOY_HOOK_URL: ${{secrets.RENDER_DEPLOY_HOOK_URL}}
-  #       run: | 
-  #         curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+      - name: Deploy backend on Render
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{secrets.RENDER_DEPLOY_HOOK_URL}}
+        run: | 
+          curl -X POST "$RENDER_DEPLOY_HOOK_URL"
