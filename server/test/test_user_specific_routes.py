@@ -85,14 +85,14 @@ def test_signup_missing_fields(client):
                         json={'username':'123user'})
     
     assert response.status_code==400
-    assert 'error' in response.json
+    assert 'message' in response.json
     
 def test_signup_dup_email(client):
     """email existise => 400"""
     user=create_user()
     response=client.post('/api/v1/auth/signup', json={'username':'newuser123', 'email':'test@example.com', 'password':'pass123'})
     assert response.status_code==400
-    assert 'already exist' in response.json.get('error','').lower()
+    assert 'already exist' in response.json.get('message','').lower()
     
 def test_signup_duplicate_username(client):
     """Username already taken → 400."""
