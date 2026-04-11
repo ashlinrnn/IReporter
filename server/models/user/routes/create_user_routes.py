@@ -26,13 +26,19 @@ api_v1.add_resource(
 )
 
 api_v1.add_resource(
-    ForgotPasswordResource,
+    RequestResetCodeResource, 
     '/auth/forgot-password',
-    endpoint='/auth/forgot-password',
+    endpoint='/auth/forgot-password'
 )
 
 api_v1.add_resource(
-    ResetPasswordResource,
+    VerifyResetCodeResource, 
+    '/auth/verify-reset-code',
+    endpoint='/auth/verify-reset-code'
+)
+
+api_v1.add_resource(
+    ResetPasswordWithCodeResource, 
     '/auth/reset-password',
     endpoint='/auth/reset-password'
 )
