@@ -1,9 +1,12 @@
 # server/blueprints/auth.py (or similar)
 from flask_restful import Resource
-from flask import request, g
+from flask import request, g, current_app
 from ....utils.auth import create_token, login_required
 from ....models import User
 from ....config import db
+import jwt
+from datetime import datetime, timedelta
+from ....services.email_service import send_password_reset_email
 
 class SignupResource(Resource):
     def post(self):
@@ -53,3 +56,57 @@ class CurrentUserResource(Resource):
     def get(self):
         # g.current_user is set by @login_required --remember
         return {'user': g.current_user.to_dict()}, 200
+    
+class ForgotPasswordResource(Resource):
+    def post(self):
+        data=request.get_json()
+        email=data.get('email','').strip().lower()
+        
+        if not email:
+            return {'message':'Email is required'}, 400
+        
+        user=User.query.filter_by(email=email).first()
+        
+        if not user:
+            return {'message': 'If your email is registered, you will receive a reset link'},200
+        
+        reset_token=jwt.encode(
+            {'user_id':user.id,'exp':datetime.utcnow()+timedelta(hours=1)},
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+        
+        url=current_app.config.get('FRONTEND_URL')
+        
+        reset_link=f"{url}/forgot-password?token={reset_token}"
+        
+        send_password_reset_email(user.email,user.username,reset_link)
+        
+        return {'message':'If your email is registered, you will receive a reset link'},200
+    
+class ResetPasswordResource(Resource):
+    def post(self):
+        
+        data = request.get_json()
+        token = data.get('token')
+        new_password = data.get('new_password')
+        
+        if not token or not new_password:
+            return {'message': 'Token and new password are required'}, 400
+        
+        try:
+            payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+            user_id = payload.get('user_id')
+            if not user_id:
+                raise jwt.InvalidTokenError
+        except jwt.InvalidTokenError:
+            return {'message': 'Invalid or expired token'}, 400
+        
+        user = db.session.get(User, user_id)
+        if not user:
+            return {'message': 'User not found'}, 404
+        
+        user.password = new_password
+        db.session.commit()
+        
+        return {'message': 'Password updated successfully'}, 200

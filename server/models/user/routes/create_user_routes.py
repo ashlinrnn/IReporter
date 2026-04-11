@@ -24,3 +24,15 @@ api_v1.add_resource(
     '/auth/me',
     endpoint='auth/me'
 )
+
+api_v1.add_resource(
+    ForgotPasswordResource,
+    '/auth/forgot-password',
+    endpoint='/auth/forgot-password',
+)
+
+api_v1.add_resource(
+    ResetPasswordResource,
+    '/auth/reset-password',
+    endpoint='/auth/reset-password'
+)
