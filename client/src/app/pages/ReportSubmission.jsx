@@ -49,7 +49,7 @@ export default function ReportSubmission() {
       }
 
       const record = await res.json();
-      const record_id = record.id;
+      const record_id = record.data.id;
 
       for (const img of images) {
         await api.uploadImage(record_id, img);
@@ -80,7 +80,7 @@ export default function ReportSubmission() {
       <button
         onClick={() => {
           setSubmitted(false);
-          setFormData({ title: '', description: '', type: 'red-flag' });
+          setFormData({ title: '', description: '', type: 'red flag' });
           setLocation(null);
           setImages([]);
           setVideo(null);

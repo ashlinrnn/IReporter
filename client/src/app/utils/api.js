@@ -72,7 +72,7 @@ export const api = {
     const form = new FormData();
     form.append("record_id", record_id);
     form.append("image", imageFile);
-    return fetch(`${BASE}/images`, {
+    return fetch(`${BASE}/images/upload`, {
       method: "POST",
       headers: headers(true),
       body: form,
@@ -89,7 +89,7 @@ export const api = {
     const form = new FormData();
     form.append("record_id", record_id);
     form.append("video", videoFile);
-    return fetch(`${BASE}/videos`, {
+    return fetch(`${BASE}/videos/upload`, {
       method: "POST",
       headers: headers(true),
       body: form,
