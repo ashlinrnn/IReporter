@@ -4,7 +4,7 @@ from flask_cors import CORS
 from .config import config_app
 from flask_migrate import Migrate
 from  .models import *
-from .routes.create_blueprint import api_pb  
+from .routes.create_blueprint import api_bp 
 import os 
 import cloudinary 
 
@@ -31,6 +31,6 @@ def create_app(test_config=None):
         supports_credentials=True
         )
     
-    app.register_blueprint(api_pb)
+    app.register_blueprint(api_bp)
     
     return app 
