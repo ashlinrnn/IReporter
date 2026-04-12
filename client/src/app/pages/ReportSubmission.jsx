@@ -16,7 +16,7 @@ const validate = (formData, location) => {
 
 export default function ReportSubmission() {
   const routerState = useLocation();
-  const [formData, setFormData] = useState({ title: '', description: '', type: 'red-flag' });
+  const [formData, setFormData] = useState({ title: '', description: '', type: 'red flag' });
   const [location, setLocation] = useState(routerState.state?.location || null);
   const [images, setImages] = useState([]);
   const [video, setVideo] = useState(null);
@@ -112,7 +112,7 @@ export default function ReportSubmission() {
             className="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             onChange={e => setFormData({...formData, type: e.target.value})}
           >
-            <option value="red-flag">🚩 Red-Flag (Corruption)</option>
+            <option value="red flag">🚩 Red-Flag (Corruption)</option>
             <option value="intervention">🛠️ Intervention (Infrastructure)</option>
           </select>
 
