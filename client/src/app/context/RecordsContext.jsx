@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import localRecords from "../../data/records.json";
+// import localRecords from "../../data/records.json";
 import { api } from "../utils/api";
 
 const RecordsContext = createContext({ records: [], loading: true, updateStatus: () => {}, deleteRecord: () => {}, editRecord: () => {} });
@@ -19,7 +19,7 @@ export function RecordsProvider({ children }) {
         setLoading(false);
       })
       .catch(() => {
-        setRecords(localRecords.records);
+        // setRecords(localRecords.records);
         setLoading(false);
       });
   }, []);

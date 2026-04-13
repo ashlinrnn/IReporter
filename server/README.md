@@ -146,8 +146,8 @@ Authorization: Bearer <your_jwt_token>
 
 1. **POST**
 
-- ``/images`` => Upload an image (multipart/form-data, fields: ``record_id``, ``image``)
-- ``/videos`` => Upload a video (multipart/form-data: ``record_id``, ``video``)
+- ``/images/upload`` => Upload an image (multipart/form-data, fields: ``record_id``, ``image``)
+- ``/videos/upload`` => Upload a video (multipart/form-data: ``record_id``, ``video``)
 
 
 2. **DELETE**
