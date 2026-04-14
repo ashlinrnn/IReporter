@@ -52,6 +52,8 @@ export default function ReportSubmission() {
     }
 
     const json = await res.json();
+    const newRec=json.data
+    addRecord(newRec)
     const record_id = json.data?.id || json.id; 
 
     for (const img of images) {

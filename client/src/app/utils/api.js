@@ -66,7 +66,9 @@ export const api = {
     }),
 
   getRecords: () =>
-    fetch(`${BASE}/records?per_page=100`, { headers: authHeaders() }),
+    fetch(`${BASE}/records?per_page=100`, { headers: authHeaders() })
+      .then(res=>res.ok?res.json():Promise.reject())
+      .then(data=>data.data),
 
   getRecord: (id) =>
     fetch(`${BASE}/records/${id}`, { headers: authHeaders() }),

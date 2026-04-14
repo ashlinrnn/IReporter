@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../utils/api";
+import { useRecords } from "../context/RecordsContext";
 
 const validate = (email, password) => {
   const errors = {};
@@ -19,6 +20,7 @@ export default function Login() {
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const {refreshRecords}=useRecords()
   const handleLogin = async (e) => {
     e.preventDefault();
     setServerError("");
@@ -32,6 +34,7 @@ export default function Login() {
       if (res.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        await refreshRecords()
         navigate("/home");
       } else {
         setServerError(data.message || "Invalid email or password.");

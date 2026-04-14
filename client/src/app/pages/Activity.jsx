@@ -1,25 +1,23 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecords } from "../context/RecordsContext";
-import imagesData from "../../data/images.json";
-import { ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import kenyanFlag from '../../assets/catswithglasses-kenya-653064.png';
 
-const PER_PAGE = 9; // good for 3x3 grid
+const PER_PAGE = 9;
 
 export default function Activity() {
   const navigate = useNavigate();
   const { records, loading } = useRecords();
   const [page, setPage] = useState(1);
-  
-  // Filter states
+
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Transform records to incidents (same as before)
+  // Transform records using their own images array
   const allIncidents = records.map((record) => {
-    const image = imagesData.images.find(img => img.record_id === record.id);
+    const imageUrl = record.images?.[0]?.image_url || kenyanFlag;
     return {
       id: record.id,
       title: record.title,
@@ -27,17 +25,13 @@ export default function Activity() {
       type: record.type,
       timestamp: new Date(record.created_at).toLocaleString(),
       location: record.latitude && record.longitude ? `${record.latitude}, ${record.longitude}` : "No location provided",
-      thumbnail: image?.image_url || kenyanFlag,
+      thumbnail: imageUrl,
     };
   });
 
-  // Apply filters
   const filteredIncidents = allIncidents.filter(incident => {
-    // Search by title (case-insensitive)
     const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase());
-    // Type filter
     const matchesType = typeFilter === "all" || incident.type === typeFilter;
-    // Status filter
     const matchesStatus = statusFilter === "all" || incident.status === statusFilter;
     return matchesSearch && matchesType && matchesStatus;
   });
@@ -45,10 +39,7 @@ export default function Activity() {
   const totalPages = Math.ceil(filteredIncidents.length / PER_PAGE);
   const paginated = filteredIncidents.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  // Reset page when filters change
-  const handleFilterChange = () => {
-    setPage(1);
-  };
+  const handleFilterChange = () => setPage(1);
 
   if (loading) {
     return (
@@ -66,7 +57,6 @@ export default function Activity() {
           {filteredIncidents.length} total reports
         </p>
       </div>
-
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 relative">
@@ -103,7 +93,6 @@ export default function Activity() {
         </div>
       </div>
 
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {paginated.map((incident) => (
           <div
@@ -111,7 +100,6 @@ export default function Activity() {
             onClick={() => navigate(`/home/incident/${incident.id}`)}
             className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500 transition-all flex flex-col"
           >
-      
             <div className="relative w-full pt-[56.25%] bg-slate-100 dark:bg-slate-900">
               <img
                 src={incident.thumbnail}
@@ -144,7 +132,6 @@ export default function Activity() {
           </div>
         ))}
       </div>
-
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">

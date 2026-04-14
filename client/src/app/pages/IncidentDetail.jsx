@@ -218,14 +218,24 @@ export default function IncidentDetail() {
         ) : (
           <h2 className="text-2xl font-black text-slate-900 dark:text-white">{record.title}</h2>
         )}
-        <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm">
+        <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-base">
           <span className="flex items-center gap-1">
-            <Clock size={14} />
+            <Clock size={16} />
             {new Date(record.created_at).toLocaleString()}
           </span>
-          <span className="flex items-center gap-1">
-            <User size={14} />
-            {record.user?.username || 'Unknown'}
+          <span className="flex items-center gap-2">
+            {record.user?.profile_pic_url ? (
+              <img 
+                src={record.user.profile_pic_url} 
+                alt={record.user.username}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <User size={20} />
+            )}
+            <span className="font-medium text-slate-700 dark:text-slate-200">
+              {record.user?.username || 'Unknown'}
+            </span>
           </span>
         </div>
       </div>
