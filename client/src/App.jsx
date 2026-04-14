@@ -53,6 +53,7 @@ export default function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/home" element={<Layout />}>
             <Route index element={<Home />} />
+            <Route path="map" element={<LiveMap />} />
             <Route path="report" element={<ReportSubmission />} />
             <Route path="activity" element={<Activity />} />
             <Route path="incident/:id" element={<IncidentDetail />} />

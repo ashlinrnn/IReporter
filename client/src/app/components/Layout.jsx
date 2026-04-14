@@ -46,6 +46,11 @@ export default function Layout() {
         </div>
 
         <nav className="flex-1 space-y-1">
+          <NavLink to="/home/map" className={linkClass}>
+            <Map size={20} className="flex-shrink-0" />
+            {!collapsed && "Live Map"}
+          </NavLink>
+          
           <NavLink to="/home" end className={linkClass}>
             <Map size={20} className="flex-shrink-0" />
             {!collapsed && "Live Map"}
@@ -105,6 +110,9 @@ export default function Layout() {
         </section>
 
         <nav className="md:hidden fixed bottom-0 w-full h-16 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center">
+          <NavLink to="/home/map" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
+            <Map size={22} />
+          </NavLink>
           <NavLink to="/home" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
             <Map size={22} />
           </NavLink>
