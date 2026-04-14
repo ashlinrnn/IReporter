@@ -42,3 +42,9 @@ api_v1.add_resource(
     '/auth/reset-password',
     endpoint='/auth/reset-password'
 )
+
+api_v1.add_resource(
+    UploadProfilePicResource, 
+    '/auth/me/profile-pic', 
+    endpoint='users_me_profile_pic'
+)

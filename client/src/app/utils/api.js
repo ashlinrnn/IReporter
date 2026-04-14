@@ -15,11 +15,11 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
 
-  register: (username, email, password) =>
+  register: (username, email, password, phone_number) =>
     fetch(`${BASE}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ username, email, password,phone_number }),
     }),
 
   me: () =>
@@ -53,7 +53,7 @@ export const api = {
     }),
 
   getRecords: () =>
-    fetch(`${BASE}/records`, { headers: authHeaders() }),
+    fetch(`${BASE}/records?per_page=100`, { headers: authHeaders() }),
 
   getRecord: (id) =>
     fetch(`${BASE}/records/${id}`, { headers: authHeaders() }),

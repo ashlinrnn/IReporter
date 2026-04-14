@@ -8,6 +8,7 @@ import jwt
 from datetime import datetime, timedelta
 from ....services.email_service import send_password_reset_code_email
 from sqlalchemy.exc import OperationalError, ProgrammingError
+from ....services.cloudinary import upload_image
 
 class SignupResource(Resource):
     def post(self):
@@ -69,6 +70,35 @@ class CurrentUserResource(Resource):
     def get(self):
         # g.current_user is set by @login_required --remember
         return {'user': g.current_user.to_dict()}, 200
+    
+    @login_required
+    def patch(self):
+        """Update current user's profile (username, email, phone_number, profile_pic_url)."""
+        data = request.get_json()
+        user = g.current_user
+
+        # Update allowed fields
+        if 'username' in data:
+            new_username = data['username'].strip().lower()
+            if User.query.filter(User.id != user.id, User.username == new_username).first():
+                return {'message': 'Username already taken'}, 400
+            user.username = new_username
+        if 'email' in data:
+            new_email = data['email'].strip().lower()
+            if User.query.filter(User.id != user.id, User.email == new_email).first():
+                return {'message': 'Email already in use'}, 400
+            user.email = new_email
+        if 'phone_number' in data:
+            user.phone_number = data['phone_number'] or None
+        if 'profile_pic_url' in data:
+            user.profile_pic_url = data['profile_pic_url']
+
+        try:
+            db.session.commit()
+            return {'user': user.to_dict()}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 400
     
 class RequestResetCodeResource(Resource):
     def post(self):
@@ -133,3 +163,25 @@ class ResetPasswordWithCodeResource(Resource):
         user.password = new_password
         db.session.commit()
         return {'message': 'Password updated successfully'}, 200
+
+
+class UploadProfilePicResource(Resource):
+    @login_required
+    def post(self):
+        """Upload a profile picture to Cloudinary and update user."""
+        if 'profile_pic' not in request.files:
+            return {'message': 'No file provided'}, 400
+
+        file = request.files['profile_pic']
+        if file.filename == '':
+            return {'message': 'Empty filename'}, 400
+
+        try:
+            # Upload to Cloudinary (reuse your existing upload_image function)
+            url = upload_image(file)   # make sure this returns the secure URL
+            user = g.current_user
+            user.profile_pic_url = url
+            db.session.commit()
+            return {'profile_pic_url': url}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500

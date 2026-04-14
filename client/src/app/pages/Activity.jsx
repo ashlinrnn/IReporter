@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecords } from "../context/RecordsContext";
 import imagesData from "../../data/images.json";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
 import kenyanFlag from '../../assets/catswithglasses-kenya-653064.png';
 
 const PER_PAGE = 9; // good for 3x3 grid
@@ -11,8 +11,14 @@ export default function Activity() {
   const navigate = useNavigate();
   const { records, loading } = useRecords();
   const [page, setPage] = useState(1);
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const incidents = records.map((record) => {
+  // Transform records to incidents (same as before)
+  const allIncidents = records.map((record) => {
     const image = imagesData.images.find(img => img.record_id === record.id);
     return {
       id: record.id,
@@ -25,8 +31,24 @@ export default function Activity() {
     };
   });
 
-  const totalPages = Math.ceil(incidents.length / PER_PAGE);
-  const paginated = incidents.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  // Apply filters
+  const filteredIncidents = allIncidents.filter(incident => {
+    // Search by title (case-insensitive)
+    const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase());
+    // Type filter
+    const matchesType = typeFilter === "all" || incident.type === typeFilter;
+    // Status filter
+    const matchesStatus = statusFilter === "all" || incident.status === statusFilter;
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredIncidents.length / PER_PAGE);
+  const paginated = filteredIncidents.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  // Reset page when filters change
+  const handleFilterChange = () => {
+    setPage(1);
+  };
 
   if (loading) {
     return (
@@ -41,11 +63,47 @@ export default function Activity() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-black italic text-slate-900 dark:text-white">ACTIVITY FEED</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-          {incidents.length} total reports
+          {filteredIncidents.length} total reports
         </p>
       </div>
 
-      {/* GRID LAYOUT */}
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
+          <input
+            type="text"
+            placeholder="Search by title..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); handleFilterChange(); }}
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+          />
+        </div>
+        <div className="flex gap-3">
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value); handleFilterChange(); }}
+            className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Types</option>
+            <option value="red flag">Red Flag</option>
+            <option value="intervention">Intervention</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); handleFilterChange(); }}
+            className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="under investigation">Under Investigation</option>
+            <option value="rejected">Rejected</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+      </div>
+
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {paginated.map((incident) => (
           <div
@@ -53,7 +111,7 @@ export default function Activity() {
             onClick={() => navigate(`/home/incident/${incident.id}`)}
             className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500 transition-all flex flex-col"
           >
-            {/* Fixed aspect ratio image container */}
+      
             <div className="relative w-full pt-[56.25%] bg-slate-100 dark:bg-slate-900">
               <img
                 src={incident.thumbnail}
@@ -87,7 +145,7 @@ export default function Activity() {
         ))}
       </div>
 
-      {/* PAGINATION (centered, below grid) */}
+
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
           <p className="text-xs text-slate-500 dark:text-slate-400">
