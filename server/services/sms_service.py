@@ -1,49 +1,32 @@
-import os 
-from twilio.rest import Client
-from twilio.base.exceptions import TwilioRestException
+import os
+import africastalking
 
 class SMSService:
     def __init__(self):
-        self.acc_sid=os.environ.get('TWILIO_ACCOUNT_SID')
-        self.auth_token=os.environ.get('TWILIO_AUTH_TOKEN')
-        self.from_number=os.environ.get('TWILIO_PHONE_NUMBER')
-        
-        if self.acc_sid and self.auth_token and self.from_number:
-            self.client=Client(self.acc_sid, self.auth_token)
+        self.username = os.environ.get('AFRICASTALKING_USERNAME', 'sandbox')
+        self.api_key = os.environ.get('AFRICASTALKING_API_KEY')
+        if self.api_key:
+            africastalking.initialize(self.username, self.api_key)
+            self.sms = africastalking.SMS
         else:
-            print('Credentials are not correct or not set ')
-        
-    def send_sms(self,to_number,message_body):
-        
-        """Returns tru when sends sms successfully
-        otherwise false
-        """
-        
-        if not self.client:
+            print("Warning: Africa's Talking API key missing")
+            self.sms = None
+
+    def send_sms(self, to_number, message_body):
+        if not self.sms:
+            print("SMS not sent: service not initialized")
             return False
-        
         if not to_number or not message_body:
             return False
-        
-        #ensure number has a +
+        # Ensure number starts with '+' and is in international format
         if not to_number.startswith('+'):
-            print("Number not in international format doesn't start with { + }.")
-        
+            to_number = '+' + to_number
         try:
-            message=self.client.messages.create(
-                body=message_body,
-                from_=self.from_number,
-                to=to_number
-            )
-            print(f'SMS sent successfully to {to_number}. SID: {message.sid}')
+            response = self.sms.send(message_body, [to_number])
+            print(f"SMS sent to {to_number}: {response}")
             return True
-        
-        except TwilioRestException as e:
-            print(f'Twilio API error: {e}')
-            return False
-        
         except Exception as e:
-            print(f'Unexpected error occurred while sending SMS: {e}')
+            print(f"Africa's Talking error: {e}")
+            return False
 
-sms_service=SMSService() #GLOBAL instance
-            
+sms_service = SMSService()

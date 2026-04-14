@@ -1,3 +1,4 @@
+africastalking==2.0.2
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.5
 aiohttp-retry==2.9.1
@@ -57,13 +58,15 @@ pytest-cov==7.1.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 pytz==2026.1.post1
+PyYAML==6.0.3
 requests==2.32.5
+responses==0.26.0
+schema==0.7.8
 sib-api-v3-sdk==7.6.0
 six==1.17.0
 SQLAlchemy==2.0.48
 SQLAlchemy-serializer==1.4.12
 tomli==2.4.0
-twilio==9.10.4
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.3
