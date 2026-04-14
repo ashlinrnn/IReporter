@@ -15,6 +15,7 @@ class SignupResource(Resource):
         username = data.get('username', '').strip().lower() 
         email = data.get('email', '').strip().lower()       
         password = data.get('password')
+        phone_number=data.get('phone_number')
 
         if not username or not email or not password:
             return {'message': 'Username, email, and password are required'}, 400
@@ -23,8 +24,11 @@ class SignupResource(Resource):
             return {'message': 'Username already exists'}, 400
         if User.query.filter_by(email=email).first():
             return {'message': 'Email already exists'}, 400
+        
+        if phone_number=='':
+            phone_number=None
 
-        user = User(username=username, email=email, password=password)
+        user = User(username=username, email=email, password=password, phone_number=phone_number)
         try:
             db.session.add(user)
             db.session.commit()

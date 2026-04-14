@@ -1,268 +1,185 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useRecords } from '../context/RecordsContext';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, Clock, User, MapPin, Pencil, Trash2, Save, X } from 'lucide-react';
-import { api } from "../utils/api";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useRecords } from "../context/RecordsContext";
+import imagesData from "../../data/images.json";
+import { ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
+import kenyanFlag from '../../assets/catswithglasses-kenya-653064.png';
 
+const PER_PAGE = 9; 
 
-const TIMELINE = [
-  { key: 'red-flag', label: 'Red-Flag Reported' },
-  { key: 'investigating', label: 'Under Investigation' },
-  { key: 'resolved', label: 'Resolved' },
-];
-const STATUS_ORDER = ['red-flag', 'investigating', 'resolved'];
-
-export default function IncidentDetail() {
-  const { id } = useParams();
+export default function Activity() {
   const navigate = useNavigate();
-  const { deleteRecord, editRecord } = useRecords();
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = localStorage.getItem("token");
+  const { records, loading } = useRecords();
+  const [page, setPage] = useState(1);
+  
+  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const [record, setRecord] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [editData, setEditData] = useState({ title: '', description: '' });
-  const [deleting, setDeleting] = useState(false);
+  
+  const allIncidents = records.map((record) => {
+    const image = imagesData.images.find(img => img.record_id === record.id);
+    return {
+      id: record.id,
+      title: record.title,
+      status: record.status,
+      type: record.type,
+      timestamp: new Date(record.created_at).toLocaleString(),
+      location: record.latitude && record.longitude ? `${record.latitude}, ${record.longitude}` : "No location provided",
+      thumbnail: image?.image_url || kenyanFlag,
+    };
+  });
 
-  useEffect(() => {
-  api.getRecord(id)
-    .then(res => {
-      if (!res.ok) throw new Error(`Status ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      setRecord(data.record || data);
-      setLoading(false);
-    })
-    .catch(async () => {
-      try {
-        const m = await import('../../data/records.json');
-        const found = m.default.records.find(r => r.id === Number(id));
-        setRecord(found || null);
-      } catch {
-        setRecord(null);
-      }
-      setLoading(false);
-    });
-}, [id]);
+  
+  const filteredIncidents = allIncidents.filter(incident => {
+    const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = typeFilter === "all" || incident.type === typeFilter;
+    const matchesStatus = statusFilter === "all" || incident.status === statusFilter;
+    return matchesSearch && matchesType && matchesStatus;
+  });
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
-      Loading incident...
-    </div>
-  );
+  const totalPages = Math.ceil(filteredIncidents.length / PER_PAGE);
+  const paginated = filteredIncidents.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  if (!record) return (
-    <div className="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
-      Incident not found.
-    </div>
-  );
-
-  const isPending = record.status === "red-flag" || record.status === "pending";
-  const isOwner = currentUser?.id === record?.user_id;
-  const canEdit = isPending && isOwner;
-  const currentIndex = STATUS_ORDER.indexOf(record.status?.toLowerCase().trim());
-
-  const handleEdit = () => {
-    setEditData({ title: record.title, description: record.description });
-    setEditing(true);
+  
+  const handleFilterChange = () => {
+    setPage(1);
   };
 
-  const handleSave = async () => {
-    await editRecord(record.id, editData);
-    setRecord({ ...record, ...editData });
-    setEditing(false);
-  };
-
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this report?")) return;
-    setDeleting(true);
-    deleteRecord(record.id);
-    navigate(-1);
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
+        Loading incidents...
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-12">
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white">Incident Details</h1>
-        </div>
-
-        {canEdit && !editing && (
-          <div className="flex gap-2">
-            <button onClick={handleEdit}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600/10 text-blue-600 dark:text-blue-400 rounded-xl text-sm font-bold hover:bg-blue-600/20 transition-all">
-              <Pencil size={14}/> Edit
-            </button>
-            <button onClick={handleDelete} disabled={deleting}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 dark:text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all">
-              <Trash2 size={14}/> Delete
-            </button>
-          </div>
-        )}
-
-        {editing && (
-          <div className="flex gap-2">
-            <button onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-sm font-bold hover:bg-emerald-500/20 transition-all">
-              <Save size={14}/> Save
-            </button>
-            <button onClick={() => setEditing(false)}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-              <X size={14}/> Cancel
-            </button>
-          </div>
-        )}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-black italic text-slate-900 dark:text-white">ACTIVITY FEED</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+          {filteredIncidents.length} total reports
+        </p>
       </div>
 
-      {record.images?.[0]?.image_url && (
-        <div className="relative rounded-3xl overflow-hidden h-64">
-          <img src={record.images[0].image_url} alt={record.title} className="w-full h-full object-cover" />
-          <span className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-black uppercase text-white ${
-            record.type === 'red-flag' ? 'bg-red-500' : 'bg-blue-500'
-          }`}>
-            {record.type}
-          </span>
-          {isPending && isOwner && (
-            <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-black uppercase bg-amber-500 text-white">
-              Pending — Editable
-            </span>
-          )}
-        </div>
-      )}
-
-      <div className="space-y-2">
-        {editing ? (
+      
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div>FILTERS SHOULD BE HERE</div>
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
           <input
-            value={editData.title}
-            onChange={e => setEditData({...editData, title: e.target.value})}
-            className="w-full text-2xl font-black bg-white dark:bg-slate-800 border border-blue-500 rounded-xl px-4 py-2 text-slate-900 dark:text-white outline-none"
+            type="text"
+            placeholder="Search by title..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); handleFilterChange(); }}
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
           />
-        ) : (
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white">{record.title}</h2>
-        )}
-        <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm">
-          <span className="flex items-center gap-1">
-            <Clock size={14} />
-            {new Date(record.created_at).toLocaleString()}
-          </span>
-          <span className="flex items-center gap-1">
-            <User size={14} />
-            {record.user?.username || 'Unknown'}
-          </span>
+        </div>
+        <div className="flex gap-3">
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value); handleFilterChange(); }}
+            className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Types</option>
+            <option value="red flag">Red Flag</option>
+            <option value="intervention">Intervention</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); handleFilterChange(); }}
+            className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="under investigation">Under Investigation</option>
+            <option value="rejected">Rejected</option>
+            <option value="resolved">Resolved</option>
+          </select>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 space-y-2">
-        <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Description</h3>
-        {editing ? (
-          <textarea
-            value={editData.description}
-            onChange={e => setEditData({...editData, description: e.target.value})}
-            className="w-full bg-white dark:bg-slate-900 border border-blue-500 rounded-xl px-4 py-3 text-slate-900 dark:text-white outline-none h-32 resize-none"
-          />
-        ) : (
-          <p className="text-slate-900 dark:text-white leading-relaxed">{record.description}</p>
-        )}
-      </div>
-
-      {record.latitude && record.longitude && (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center gap-2 text-blue-500 dark:text-blue-400">
-            <MapPin size={18} />
-            <h3 className="text-sm font-black uppercase tracking-widest">Location</h3>
-          </div>
-          <p className="text-slate-900 dark:text-white font-mono text-sm">{record.latitude}, {record.longitude}</p>
-          <div className="h-48 rounded-xl overflow-hidden">
-            <MapContainer center={[record.latitude, record.longitude]} zoom={14} className="h-full w-full" zoomControl={false}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={[record.latitude, record.longitude]} />
-            </MapContainer>
-          </div>
-        </div>
-      )}
-
-      {(record.images?.length > 0 || record.videos?.length > 0) && (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 space-y-4">
-          <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Media</h3>
-          {record.images?.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {record.images.map((img) => (
-                <div key={img.id} className="relative group rounded-xl overflow-hidden">
-                  <img src={img.image_url} className="w-full h-24 object-cover" />
-                  {canEdit && (
-                    <button
-                      onClick={async () => {
-                      await api.deleteImage(img.id);
-                      setRecord({ ...record, images: record.images.filter(i => i.id !== img.id) });
-                    }}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
-                    >×</button>
-                  )}
-                </div>
-              ))}
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {paginated.map((incident) => (
+          <div
+            key={incident.id}
+            onClick={() => navigate(`/home/incident/${incident.id}`)}
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500 transition-all flex flex-col"
+          >
+            
+            <div className="relative w-full pt-[56.25%] bg-slate-100 dark:bg-slate-900">
+              <img
+                src={incident.thumbnail}
+                alt={incident.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
             </div>
-          )}
-          {record.videos?.map((vid) => (
-            <div key={vid.id} className="relative">
-              <video src={vid.video_url} controls className="w-full rounded-xl" />
-              {canEdit && (
-                <button
-                  onClick={async () => {
-                    await api.deleteVideo(vid.id);
-                    setRecord({ ...record, videos: record.videos.filter(v => v.id !== vid.id) });
-                  }}
-                  className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold"
-                >Delete Video</button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 space-y-4">
-        <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Timeline</h3>
-        <div className="space-y-0">
-          {TIMELINE.map((step, index) => {
-            const isCompleted = index <= currentIndex;
-            const isLast = index === TIMELINE.length - 1;
-            return (
-              <div key={step.key} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${
-                    isCompleted ? 'bg-emerald-500 border-emerald-500' : 'bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600'
-                  }`}>
-                    {isCompleted && (
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                  {!isLast && <div className={`w-0.5 h-10 ${isCompleted ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'}`} />}
-                </div>
-                <div className="pb-2 pt-1">
-                  <p className={`font-bold text-sm ${isCompleted ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
-                    {step.label}
-                  </p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">
-                    {isCompleted ? new Date(record.created_at).toLocaleString() : 'Pending'}
-                  </p>
-                </div>
+            <div className="p-4 space-y-1 flex flex-col flex-1">
+              <div className="flex justify-between items-start gap-2">
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base line-clamp-2">
+                  {incident.title}
+                </h3>
+                <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase whitespace-nowrap ${
+                  incident.status === "pending" || incident.status === "red flag"
+                    ? "bg-red-500/10 text-red-500 dark:text-red-400"
+                    : incident.status === "under investigation"
+                    ? "bg-orange-500/10 text-orange-500 dark:text-orange-400"
+                    : incident.status === "rejected"
+                    ? "bg-red-500/10 text-red-500 dark:text-red-400"
+                    : "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
+                }`}>
+                  {incident.status}
+                </span>
               </div>
-            );
-          })}
-        </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{incident.timestamp}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+                📍 {incident.location}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
+
+      
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30 hover:border-blue-500 transition-all"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+              <button
+                key={n}
+                onClick={() => setPage(n)}
+                className={`w-8 h-8 rounded-xl text-xs font-black transition-all ${
+                  page === n
+                    ? "bg-blue-600 text-white"
+                    : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-blue-500"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30 hover:border-blue-500 transition-all"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

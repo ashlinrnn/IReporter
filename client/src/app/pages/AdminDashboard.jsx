@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useRecords } from "../context/RecordsContext";
 import { Shield, ChevronLeft, ChevronRight } from "lucide-react";
 
-const PER_PAGE = 5;
+const PER_PAGE = 10;
 
 export default function AdminDashboard() {
   const { records, updateStatus } = useRecords();
@@ -77,6 +77,7 @@ export default function AdminDashboard() {
                     onChange={e => updateStatus(record.id, e.target.value)}
                     className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white p-2 rounded-lg text-xs font-bold outline-none cursor-pointer"
                   >
+                    <option value='pending'>Pending</option>
                     <option value="under investigation">Under Investigation</option>
                     <option value="resolved">Resolved</option>
                     <option value="rejected">Rejected</option>

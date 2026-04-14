@@ -34,21 +34,29 @@ const getIcon = (status) => {
 };
 
 export default function Map({ incidents = [], onSelect, onLocationSelect, selectedLocation }) {
+  const validIncidents = incidents.filter(
+    i => i.latitude != null && i.longitude != null && !isNaN(i.latitude) && !isNaN(i.longitude)
+  );
+
+  // Validate selectedLocation similarly
+  const isValidSelected = selectedLocation &&
+    Array.isArray(selectedLocation) &&
+    selectedLocation.length === 2 &&
+    selectedLocation[0] != null &&
+    selectedLocation[1] != null;
   return (
     <MapContainer center={[-1.286389, 36.817223]} zoom={13} className="h-full w-full">
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
       <LocationPicker onLocationSelect={onLocationSelect} />
 
-      {/* Pinned location marker */}
-      {selectedLocation && (
+      {isValidSelected && (
         <Marker position={selectedLocation} icon={pinIcon}>
           <Popup>📍 Incident location pinned</Popup>
         </Marker>
       )}
 
-      {/* Existing incidents */}
-      {incidents.map((i) => (
+      {validIncidents.map((i) => (
         <Marker
           key={i.id}
           position={[i.latitude, i.longitude]}

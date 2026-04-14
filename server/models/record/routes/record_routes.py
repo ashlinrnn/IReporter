@@ -5,6 +5,7 @@ from ... import Record
 from ....config import db
 from werkzeug.exceptions import Forbidden
 from ....services.email_service import send_status_update_email
+from ....services.sms_service import sms_service
 
 class RecordResource(Resource):
     @login_required
@@ -60,6 +61,7 @@ class RecordCreateResource(Resource):
             return make_response({'data':record.to_dict()},201)
         except Exception as e:
             db.session.rollback()
+            print(f"Record creation error: {e}")
             return {'message':str(e)},400
 
 class AdminRecordResource(Resource):
@@ -89,9 +91,13 @@ class AdminRecordResource(Resource):
                 # Log the message but don't break the response
                 print(f"Email failed: {e}")
             
+            if record.user.phone_number:
+                message=f"ℹ️ iReporter: Status of report '{record.title}' changed to '{new_status}'."
+                sms_service.send_sms(record.user.phone_number, message)
+            else: print(f'SMS not sent: User {record.user.username} has no phone number')
+            
             return make_response({'data': record.to_dict()}, 200)
         except ValueError as e:
-            
             return {'message': str(e)}, 400
         except Exception as e:
             db.session.rollback()

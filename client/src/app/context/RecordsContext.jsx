@@ -9,17 +9,20 @@ export function RecordsProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     api.getRecords()
-      .then(res => {
-        if (!res.ok) throw new Error("Backend down");
-        return res.json();
-      })
-      .then(data => {
-        setRecords(Array.isArray(data) ? data : data.records || []);
+      .then(recordsList => {
+        console.log("Records data:", recordsList);
+        setRecords(Array.isArray(recordsList) ? recordsList : []);
         setLoading(false);
       })
-      .catch(() => {
-        // setRecords(localRecords.records);
+      .catch(err => {
+        console.error("Failed to fetch records:", err);
+        setRecords([]);
         setLoading(false);
       });
   }, []);
@@ -38,9 +41,20 @@ export function RecordsProvider({ children }) {
     setRecords(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
     return api.updateRecord(id, updates);
   };
+  const addRecord = (newRecord) => {
+    setRecords(prev => [newRecord, ...prev]);
+  };
+  const refreshRecords = () => {
+  api.getRecords()
+    .then(recordsList => {
+      setRecords(Array.isArray(recordsList) ? recordsList : []);
+      setLoading(false);
+    })
+    .catch(err => console.error("Failed to refresh records:", err));  
+  };
 
   return (
-    <RecordsContext.Provider value={{ records, loading, updateStatus, deleteRecord, editRecord }}>
+    <RecordsContext.Provider value={{ records, loading, updateStatus, deleteRecord, editRecord, addRecord,refreshRecords }}>
       {children}
     </RecordsContext.Provider>
   );

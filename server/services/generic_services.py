@@ -14,7 +14,7 @@ class AllResource(Resource):
         page=int(request.args.get('page',1))
         
         try:
-            query=self.Model.query.limit(per_page).offset((page-1)*per_page)
+            query = self.Model.query.order_by(self.Model.id.desc()).limit(per_page).offset((page-1)*per_page)
             total_count=self.Model.query.count()
             
             items_dict=[i.to_dict()for i in query.all()]

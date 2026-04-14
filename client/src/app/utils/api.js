@@ -16,11 +16,11 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
 
-  register: (username, email, password) =>
+  register: (username, email, password,phone_number) =>
     fetch(`${BASE}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ username, email, password, phone_number }),
     }),
 
   me: () =>
@@ -33,8 +33,11 @@ export const api = {
     }),
 
   // RECORDS
-  getRecords: () =>
-    fetch(`${BASE}/records`, { headers: headers() }),
+  getRecords: () =>{
+    console.log("Fetching from:", `${BASE}/records?per_page=100`);
+    return fetch(`${BASE}/records?per_page=100`, { headers: headers() })
+    .then(res => res.ok ? res.json() : Promise.reject())
+    .then(data => data.data)},
 
   getRecord: (id) =>
     fetch(`${BASE}/records/${id}`, { headers: headers() }),

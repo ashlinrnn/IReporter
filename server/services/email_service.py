@@ -26,7 +26,7 @@ def send_status_update_email(recipient_email, recipient_name, record_title, new_
     <html>
         <body>
             <p>Hello {recipient_name},</p>
-            <p>The status of your report <strong>'{record_title}'</strong> has been updated to: <strong>{new_status}</strong>.</p>
+            <p>ℹ️ The status of your report <strong>'{record_title}'</strong> has been updated to: <strong>{new_status}</strong>.</p>
             <p>Thank you for using iReporter.</p>
         </body>
     </html>

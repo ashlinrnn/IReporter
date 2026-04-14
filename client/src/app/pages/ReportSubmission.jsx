@@ -3,6 +3,7 @@ import Map from '../components/Map';
 import { Camera, Video, Send, AlertCircle, CheckCircle } from 'lucide-react';
 import { useLocation } from "react-router-dom";
 import { api } from "../utils/api";
+import { useRecords } from "../context/RecordsContext";
 
 const validate = (formData, location) => {
   const errors = {};
@@ -25,6 +26,8 @@ export default function ReportSubmission() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  const { addRecord } = useRecords();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,6 +52,8 @@ export default function ReportSubmission() {
       }
 
       const record = await res.json();
+      const newRecord=record.data
+      addRecord(newRecord)
       const record_id = record.data.id;
 
       for (const img of images) {

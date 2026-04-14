@@ -7,11 +7,12 @@ class User(db.Model, SerializerMixin):
     
     __tablename__='users'
     
-    serialize_rules=('-records.user','-password_hash','-created_at', '-updated_at')
+    serialize_rules=('-records.user','-password_hash','-created_at', '-updated_at','-phone_number')
     
     id=db.Column(db.Integer, primary_key=True)
     username=db.Column(db.String, unique=True, nullable=False)
     email=db.Column(db.String, unique=True, nullable=False)
+    phone_number=db.Column(db.String(20), nullable=True)
     password_hash=db.Column(db.String, nullable=False)
     is_admin=db.Column(db.Boolean, default=False)
     created_at=db.Column(db.DateTime, server_default=db.func.now())
