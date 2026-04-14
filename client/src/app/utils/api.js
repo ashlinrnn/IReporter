@@ -19,11 +19,24 @@ export const api = {
     fetch(`${BASE}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password,phone_number }),
+      body: JSON.stringify({ username, email, password, phone_number }),
     }),
 
-  me: () =>
-    fetch(`${BASE}/auth/me`, { headers: authHeaders() }),
+  updateUser: (userData) =>
+    fetch(`${BASE}/auth/me`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify(userData),
+    }),
+
+  uploadProfilePic: (formData) =>
+    fetch(`${BASE}/auth/me/profile-pic`, {
+      method: "POST",
+      headers: authHeaders(true),
+      body: formData,
+    }),
+
+  me: () => fetch(`${BASE}/auth/me`, { headers: authHeaders() }),
 
   logout: () =>
     fetch(`${BASE}/auth/logout`, {

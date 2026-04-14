@@ -13,7 +13,7 @@ export default function Settings() {
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  // Load current user data
+  
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -30,7 +30,7 @@ export default function Settings() {
     fetchUser();
   }, []);
 
-  // Theme handling (unchanged)
+  
   useEffect(() => {
     const handler = () => {
       setDark(document.documentElement.classList.contains('dark'));
@@ -47,7 +47,7 @@ export default function Settings() {
     window.dispatchEvent(new Event('themechange'));
   };
 
-  // Handle profile picture selection
+  
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -55,51 +55,59 @@ export default function Settings() {
     setPreviewUrl(URL.createObjectURL(file));
   };
 
-  // Upload profile picture to backend
-  const uploadProfilePic = async () => {
-    if (!profilePicFile) return null;
-    const formData = new FormData();
-    formData.append('profile_pic', profilePicFile);
-    try {
-      const res = await api.uploadProfilePicture(formData);
-      if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
-      return data.profile_pic_url;
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Profile picture upload failed' });
-      return null;
-    }
-  };
+  
 
-  // Save all changes (username, email, phone, profile pic)
+const uploadProfilePic = async () => {
+  if (!profilePicFile) return null;
+  const formData = new FormData();
+  formData.append('profile_pic', profilePicFile);
+  try {
+    const res = await api.uploadProfilePic(formData);
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    return data.profile_pic_url;
+  } catch (err) {
+    setMessage({ type: 'error', text: 'Profile picture upload failed' });
+    return null;
+  }
+};
+
   const handleSave = async () => {
+
     setSaving(true);
     setMessage({ type: '', text: '' });
 
-    // Upload profile picture if changed
     let newProfilePicUrl = user.profile_pic_url;
+    
     if (profilePicFile) {
       const uploadedUrl = await uploadProfilePic();
-      if (uploadedUrl) newProfilePicUrl = uploadedUrl;
+      
+      if (uploadedUrl) {
+        newProfilePicUrl = uploadedUrl;
+        setUser(prev => ({ ...prev, profile_pic_url: uploadedUrl }));
+      }
     }
 
-    // Update user info
+    
     try {
       const res = await api.updateUser({
         username: user.username,
         email: user.email,
         phone_number: user.phone_number,
-        profile_pic_url: newProfilePicUrl,
       });
+      
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.message || 'Update failed');
       }
+      
       const updatedUser = await res.json();
       setUser(updatedUser.user);
       localStorage.setItem('user', JSON.stringify(updatedUser.user));
+      
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       setProfilePicFile(null);
+      
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     } catch (err) {
@@ -108,7 +116,6 @@ export default function Settings() {
       setSaving(false);
     }
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
@@ -132,7 +139,7 @@ export default function Settings() {
       <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="p-8 space-y-6">
 
-          {/* Profile Picture Section */}
+          
           <div className="flex flex-col items-center gap-4 pb-4 border-b border-slate-200 dark:border-slate-700">
             <div className="relative">
               <div className="w-28 h-28 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
@@ -152,7 +159,7 @@ export default function Settings() {
             <p className="text-xs text-slate-500 dark:text-slate-400">Click the camera to change profile picture</p>
           </div>
 
-          {/* Username */}
+          
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
               Username
@@ -167,7 +174,7 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Email */}
+          
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
               Email Address
@@ -182,7 +189,7 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Phone Number (NEW) */}
+          
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
               Phone Number (for SMS alerts)
@@ -199,7 +206,7 @@ export default function Settings() {
             <p className="text-[10px] text-slate-400 dark:text-slate-500">Format: +254XXXXXXXXX</p>
           </div>
 
-          {/* Save Button */}
+          
           <button
             onClick={handleSave}
             disabled={saving}
@@ -209,7 +216,7 @@ export default function Settings() {
             {saving ? 'SAVING...' : 'SAVE CHANGES'}
           </button>
 
-          {/* Theme Toggle */}
+          
           <button
             onClick={toggleTheme}
             className="w-full py-4 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all hover:border-blue-500"
@@ -218,7 +225,7 @@ export default function Settings() {
             {dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           </button>
 
-          {/* Status Message */}
+          
           {message.text && (
             <div className={`text-center text-sm font-bold p-3 rounded-xl ${
               message.type === 'success' 

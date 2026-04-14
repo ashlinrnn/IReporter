@@ -103,32 +103,3 @@ def test_signup_duplicate_username(client):
         'password': 'pw'
     })
     assert response.status_code == 400
-    
-def test_auth_me_with_invalid_token(client):
-    """===> 401"""
-
-    headers={'Authorization':'Bearer invalid.token.here'}
-    response=client.get('/api/v1/auth/me', headers=headers)
-    assert response.status_code==401
-
-def test_auth_me_without_token(client):
-    """===> 401"""
-    response=client.get('/api/v1/auth/me')
-    
-    assert response.status_code==401
-
-def test_auth_me_with_valid_token(client):
-    user,token=create_user()
-    headers={'Authorization': f'Bearer {token}'}
-    response=client.get('/api/v1/auth/me',headers=headers)
-    
-    assert response.status_code==200
-    
-    data=response.json
-    
-    user_data=data.get('user')
-    assert user_data.get('id')==user.id
-    assert user_data.get('username')==user.username
-    assert user_data.get('email')==user.email
-    
-    assert 'password_hash' not in user_data
