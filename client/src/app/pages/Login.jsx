@@ -54,8 +54,8 @@ export default function Login() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#020c1b] text-white p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl font-black text-2xl mb-4">iR</div>
-          <h1 className="text-4xl font-black tracking-tight">iReporter</h1>
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl font-black text-2xl mb-4">IR</div>
+          <h1 className="text-4xl font-black tracking-tight">IReporter</h1>
           <p className="text-slate-400 mt-2">Civic Justice & Whistleblower Platform</p>
         </div>
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-4">

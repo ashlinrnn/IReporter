@@ -1,6 +1,6 @@
-const BASE = import.meta.env.VITE_API_URL;
+const BASE = import.meta.env.VITE_API || "http://localhost:5000/api/v1";
 
-const headers = (isFormData = false) => {
+const authHeaders = (isFormData = false) => {
   const token = localStorage.getItem("token");
   const h = { Authorization: `Bearer ${token}` };
   if (!isFormData) h["Content-Type"] = "application/json";
@@ -8,7 +8,6 @@ const headers = (isFormData = false) => {
 };
 
 export const api = {
-  // AUTH
   login: (email, password) =>
     fetch(`${BASE}/auth/login`, {
       method: "POST",
@@ -16,68 +15,83 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
 
-  register: (username, email, password,phone_number) =>
+  register: (username, email, password) =>
     fetch(`${BASE}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password, phone_number }),
+      body: JSON.stringify({ username, email, password }),
     }),
 
   me: () =>
-    fetch(`${BASE}/auth/me`, { headers: headers() }),
+    fetch(`${BASE}/auth/me`, { headers: authHeaders() }),
 
   logout: () =>
     fetch(`${BASE}/auth/logout`, {
       method: "POST",
-      headers: headers(),
+      headers: authHeaders(),
     }),
 
-  // RECORDS
-  getRecords: () =>{
-    console.log("Fetching from:", `${BASE}/records?per_page=100`);
-    return fetch(`${BASE}/records?per_page=100`, { headers: headers() })
-    .then(res => res.ok ? res.json() : Promise.reject())
-    .then(data => data.data)},
+  forgotPassword: (email) =>
+    fetch(`${BASE}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    }),
+
+  verifyResetCode: (email, code) =>
+    fetch(`${BASE}/auth/verify-reset-code`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code }),
+    }),
+
+  resetPassword: (email, reset_token, password) =>
+    fetch(`${BASE}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, reset_token, password }),
+    }),
+
+  getRecords: () =>
+    fetch(`${BASE}/records`, { headers: authHeaders() }),
 
   getRecord: (id) =>
-    fetch(`${BASE}/records/${id}`, { headers: headers() }),
+    fetch(`${BASE}/records/${id}`, { headers: authHeaders() }),
 
   createRecord: (body) =>
     fetch(`${BASE}/records/create`, {
       method: "POST",
-      headers: headers(),
+      headers: authHeaders(),
       body: JSON.stringify(body),
     }),
 
   updateRecord: (id, body) =>
     fetch(`${BASE}/records/me/${id}`, {
       method: "PATCH",
-      headers: headers(),
+      headers: authHeaders(),
       body: JSON.stringify(body),
     }),
 
   deleteRecord: (id) =>
     fetch(`${BASE}/records/me/${id}`, {
       method: "DELETE",
-      headers: headers(),
+      headers: authHeaders(),
     }),
 
-  // ADMIN
   updateStatus: (id, status) =>
     fetch(`${BASE}/admin/records/${id}/status`, {
       method: "PATCH",
-      headers: headers(),
+      headers: authHeaders(),
       body: JSON.stringify({ status }),
     }),
 
-  // IMAGES & VIDEOS
   uploadImage: (record_id, imageFile) => {
     const form = new FormData();
     form.append("record_id", record_id);
     form.append("image", imageFile);
     return fetch(`${BASE}/images/upload`, {
       method: "POST",
-      headers: headers(true),
+      headers: authHeaders(true),
       body: form,
     });
   },
@@ -85,7 +99,7 @@ export const api = {
   deleteImage: (id) =>
     fetch(`${BASE}/images/${id}`, {
       method: "DELETE",
-      headers: headers(),
+      headers: authHeaders(),
     }),
 
   uploadVideo: (record_id, videoFile) => {
@@ -94,7 +108,7 @@ export const api = {
     form.append("video", videoFile);
     return fetch(`${BASE}/videos/upload`, {
       method: "POST",
-      headers: headers(true),
+      headers: authHeaders(true),
       body: form,
     });
   },
@@ -102,6 +116,6 @@ export const api = {
   deleteVideo: (id) =>
     fetch(`${BASE}/videos/${id}`, {
       method: "DELETE",
-      headers: headers(),
+      headers: authHeaders(),
     }),
 };

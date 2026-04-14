@@ -9,23 +9,28 @@ export function RecordsProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    setLoading(false);
+    return;
+  }
+  api.getRecords()
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    })
+    .then(data => {
+      console.log("Records data:", data);
+      const records = Array.isArray(data) ? data : data.data || data.records || [];
+      setRecords(records);
       setLoading(false);
-      return;
-    }
-    api.getRecords()
-      .then(recordsList => {
-        console.log("Records data:", recordsList);
-        setRecords(Array.isArray(recordsList) ? recordsList : []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch records:", err);
-        setRecords([]);
-        setLoading(false);
-      });
-  }, []);
+    })
+    .catch(err => {
+      console.error("Failed to fetch records:", err);
+      setRecords([]);
+      setLoading(false);
+    });
+}, []);
 
   const updateStatus = (id, status) => {
     setRecords(prev => prev.map(r => r.id === id ? { ...r, status } : r));
@@ -46,12 +51,17 @@ export function RecordsProvider({ children }) {
   };
   const refreshRecords = () => {
   api.getRecords()
-    .then(recordsList => {
-      setRecords(Array.isArray(recordsList) ? recordsList : []);
+    .then(res => {
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    })
+    .then(data => {
+      const records = Array.isArray(data) ? data : data.data || data.records || [];
+      setRecords(records);
       setLoading(false);
     })
-    .catch(err => console.error("Failed to refresh records:", err));  
-  };
+    .catch(err => console.error("Failed to refresh records:", err));
+};
 
   return (
     <RecordsContext.Provider value={{ records, loading, updateStatus, deleteRecord, editRecord, addRecord,refreshRecords }}>
