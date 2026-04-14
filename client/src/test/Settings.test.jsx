@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
-import Settings from '../pages/Settings';
-import { api } from '../utils/api';
+import Settings from '../app/pages/Settings';
+import { api } from '../app/utils/api';
 
 // Mock the entire api module
-vi.mock('../utils/api', () => ({
+vi.mock('../app/utils/api', () => ({
   api: {
     me: vi.fn(),
     updateUser: vi.fn(),
@@ -12,21 +12,17 @@ vi.mock('../utils/api', () => ({
   },
 }));
 
-// Helper to render Settings with mocked API
 const renderSettings = () => {
   render(<Settings />);
 };
 
 describe('Settings Page', () => {
   beforeEach(() => {
-    // Reset mocks before each test
     vi.clearAllMocks();
-    // Clear localStorage
     localStorage.clear();
   });
 
   it('renders settings heading after loading', async () => {
-    // Mock successful API response
     api.me.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -42,7 +38,6 @@ describe('Settings Page', () => {
 
     renderSettings();
 
-    // Wait for loading to finish and heading to appear
     await waitFor(() => {
       expect(screen.getByText('SETTINGS')).toBeInTheDocument();
     });

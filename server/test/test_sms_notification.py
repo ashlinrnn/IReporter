@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from server.app import create_app
 from server.config import db
 from server.models import User, Record
@@ -54,10 +54,10 @@ def create_record(user_id, status='pending'):
     db.session.commit()
     return record
 
-# Patch the Africa's Talking SMS send method inside the sms_service module
-@patch('server.services.sms_service.africastalking.SMS.send')
+# Patch the sms_service.send_sms method directly
+@patch('server.services.sms_service.sms_service.send_sms')
 def test_sms_sent_when_user_has_phone_number(mock_send_sms, client):
-    mock_send_sms.return_value = [{'status': 'success'}]
+    mock_send_sms.return_value = True
     user = create_user_with_phone(phone_number='+254712345678')
     record = create_record(user.id)
     admin = create_user_with_phone(is_admin=True)
@@ -71,12 +71,12 @@ def test_sms_sent_when_user_has_phone_number(mock_send_sms, client):
     )
     assert response.status_code == 200
     mock_send_sms.assert_called_once()
-    # The call arguments: (message, [to_number])
     args, _ = mock_send_sms.call_args
-    assert args[0] == f"ℹ️ iReporter: Status of report '{record.title}' changed to 'under investigation'."
-    assert args[1] == ['+254712345678']
+    assert args[0] == user.phone_number
+    expected_message = f"ℹ️ iReporter: Status of report '{record.title}' changed to 'under investigation'."
+    assert args[1] == expected_message
 
-@patch('server.services.sms_service.africastalking.SMS.send')
+@patch('server.services.sms_service.sms_service.send_sms')
 def test_sms_not_sent_when_user_no_phone_number(mock_send_sms, client):
     user = create_user_with_phone(phone_number=None)
     record = create_record(user.id)
@@ -92,9 +92,8 @@ def test_sms_not_sent_when_user_no_phone_number(mock_send_sms, client):
     assert response.status_code == 200
     mock_send_sms.assert_not_called()
 
-@patch('server.services.sms_service.africastalking.SMS.send')
+@patch('server.services.sms_service.sms_service.send_sms')
 def test_sms_failure_does_not_block_status_update(mock_send_sms, client):
-    # Simulate an exception during SMS sending
     mock_send_sms.side_effect = Exception("Network error")
     user = create_user_with_phone(phone_number='+254712345678')
     record = create_record(user.id)
@@ -108,14 +107,13 @@ def test_sms_failure_does_not_block_status_update(mock_send_sms, client):
         json={'status': 'resolved'}
     )
     assert response.status_code == 200
-    # SMS was attempted (even though it failed)
     mock_send_sms.assert_called_once()
     updated_record = db.session.get(Record, record.id)
     assert updated_record.status == 'resolved'
 
-@patch('server.services.sms_service.africastalking.SMS.send')
+@patch('server.services.sms_service.sms_service.send_sms')
 def test_sms_correct_message_format(mock_send_sms, client):
-    mock_send_sms.return_value = [{'status': 'success'}]
+    mock_send_sms.return_value = True
     user = create_user_with_phone(phone_number='+254712345678')
     record = create_record(user.id)
     admin = create_user_with_phone(is_admin=True)
@@ -133,5 +131,5 @@ def test_sms_correct_message_format(mock_send_sms, client):
     mock_send_sms.assert_called_once()
     args, _ = mock_send_sms.call_args
     expected_message = f"ℹ️ iReporter: Status of report '{record.title}' changed to 'rejected'."
-    assert args[0] == expected_message
-    assert args[1] == ['+254712345678']
+    assert args[0] == user.phone_number
+    assert args[1] == expected_message

@@ -5,7 +5,6 @@ from server.app import create_app
 from server.models import User, Record
 from server.config import db
 
-# Force in‑memory database for tests
 os.environ['FLASK_SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
 
 fake = Faker()
