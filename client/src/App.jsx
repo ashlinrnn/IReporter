@@ -4,6 +4,7 @@ import Layout from './app/components/Layout';
 import Login from './app/pages/Login';
 import ForgotPassword from './app/pages/ForgotPassword';
 import SignUp from './app/pages/SignUp';
+import LiveMap from './app/pages/LiveMap';
 import Home from './app/pages/Home';
 import Activity from './app/pages/Activity';
 import AdminDashboard from './app/pages/AdminDashboard';

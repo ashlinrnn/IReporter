@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import {
   Map, List, ShieldCheck, Settings, PlusCircle,
-  LogOut, ChevronLeft, Sun, Moon,
+  LogOut, ChevronLeft, Sun, Moon, LayoutDashboard,
 } from "lucide-react";
 
 export default function Layout() {
@@ -39,37 +39,37 @@ export default function Layout() {
       } bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800`}>
 
         <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="bg-blue-600 p-2 rounded-lg font-black text-white flex-shrink-0">iR</div>
+          <div className="bg-blue-600 p-2 rounded-lg font-black text-white flex-shrink-0">IR</div>
           {!collapsed && (
-            <h1 className="text-xl font-bold tracking-tighter text-slate-900 dark:text-white">iReporter</h1>
+            <h1 className="text-xl font-bold tracking-tighter text-slate-900 dark:text-white">IReporter</h1>
           )}
         </div>
 
         <nav className="flex-1 space-y-1">
-          <NavLink to="/home/map" className={linkClass}>
-            <Map size={20} className="flex-shrink-0" />
-            {!collapsed && "Live Map"}
+
+        <NavLink to="/home" end className={linkClass}>
+          <Map size={20} className="flex-shrink-0" />
+          {!collapsed && "Dashboard"}
+        </NavLink>
+        <NavLink to="/home/map" className={linkClass}>
+          <Map size={20} className="flex-shrink-0" />
+          {!collapsed && "Live Map"}
+        </NavLink>
+        <NavLink to="/home/report" className={linkClass}>
+          <PlusCircle size={20} className="flex-shrink-0" />
+          {!collapsed && "File Report"}
+        </NavLink>
+        <NavLink to="/home/activity" className={linkClass}>
+          <List size={20} className="flex-shrink-0" />
+          {!collapsed && "Activity Feed"}
+        </NavLink>
+        {user?.is_admin && (
+          <NavLink to="/home/admin" className={linkClass}>
+            <ShieldCheck size={20} className="flex-shrink-0" />
+            {!collapsed && "Admin Panel"}
           </NavLink>
-          
-          <NavLink to="/home" end className={linkClass}>
-            <Map size={20} className="flex-shrink-0" />
-            {!collapsed && "Live Map"}
-          </NavLink>
-          <NavLink to="/home/report" className={linkClass}>
-            <PlusCircle size={20} className="flex-shrink-0" />
-            {!collapsed && "File Report"}
-          </NavLink>
-          <NavLink to="/home/activity" className={linkClass}>
-            <List size={20} className="flex-shrink-0" />
-            {!collapsed && "Activity Feed"}
-          </NavLink>
-          {user?.is_admin && (
-            <NavLink to="/home/admin" className={linkClass}>
-              <ShieldCheck size={20} className="flex-shrink-0" />
-              {!collapsed && "Admin Panel"}
-            </NavLink>
-          )}
-        </nav>
+        )}
+      </nav>
 
         <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-1">
           <button
@@ -110,22 +110,22 @@ export default function Layout() {
         </section>
 
         <nav className="md:hidden fixed bottom-0 w-full h-16 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center">
-          <NavLink to="/home/map" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
-            <Map size={22} />
-          </NavLink>
-          <NavLink to="/home" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
-            <Map size={22} />
-          </NavLink>
-          <NavLink to="/home/report" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
-            <PlusCircle size={22} />
-          </NavLink>
-          <NavLink to="/home/activity" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
-            <List size={22} />
-          </NavLink>
-          <NavLink to="/home/settings" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
-            <Settings size={22} />
-          </NavLink>
-        </nav>
+        <NavLink to="/home" end className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
+          <LayoutDashboard size={22} />
+        </NavLink>
+        <NavLink to="/home/map" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
+          <Map size={22} />
+        </NavLink>
+        <NavLink to="/home/report" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
+          <PlusCircle size={22} />
+        </NavLink>
+        <NavLink to="/home/activity" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
+          <List size={22} />
+        </NavLink>
+        <NavLink to="/home/settings" className={({ isActive }) => isActive ? "text-blue-600" : "text-slate-400"}>
+          <Settings size={22} />
+        </NavLink>
+      </nav>
       </main>
     </div>
   );
