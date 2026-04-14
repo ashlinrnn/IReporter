@@ -1,45 +1,141 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import { describe, it, expect, beforeEach } from 'vitest'
-import Settings from '../app/pages/Settings'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
+import Settings from '../pages/Settings';
+import { api } from '../utils/api';
 
-beforeEach(() => {
-  localStorage.setItem('user', JSON.stringify({ username: 'TestUser', email: 'test@test.com' }))
-})
+// Mock the entire api module
+vi.mock('../utils/api', () => ({
+  api: {
+    me: vi.fn(),
+    updateUser: vi.fn(),
+    uploadProfilePic: vi.fn(),
+  },
+}));
 
-const renderSettings = () => render(
-  <BrowserRouter><Settings /></BrowserRouter>
-)
+// Helper to render Settings with mocked API
+const renderSettings = () => {
+  render(<Settings />);
+};
 
 describe('Settings Page', () => {
-  it('renders settings heading', () => {
-    renderSettings()
-    expect(screen.getByText('SETTINGS')).toBeInTheDocument()
-  })
+  beforeEach(() => {
+    // Reset mocks before each test
+    vi.clearAllMocks();
+    // Clear localStorage
+    localStorage.clear();
+  });
 
-  it('loads user data from localStorage', () => {
-    renderSettings()
-    expect(screen.getByDisplayValue('TestUser')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('test@test.com')).toBeInTheDocument()
-  })
+  it('renders settings heading after loading', async () => {
+    // Mock successful API response
+    api.me.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          id: 1,
+          username: 'TestUser',
+          email: 'test@test.com',
+          phone_number: '+254712345678',
+          profile_pic_url: null,
+        },
+      }),
+    });
 
-  it('updates username input', () => {
-    renderSettings()
-    const input = screen.getByDisplayValue('TestUser')
-    fireEvent.change(input, { target: { value: 'NewUsername' } })
-    expect(input.value).toBe('NewUsername')
-  })
+    renderSettings();
 
-  it('has save changes button', () => {
-    renderSettings()
-    expect(screen.getByText('SAVE CHANGES')).toBeInTheDocument()
-  })
+    // Wait for loading to finish and heading to appear
+    await waitFor(() => {
+      expect(screen.getByText('SETTINGS')).toBeInTheDocument();
+    });
+  });
 
-  it('has theme toggle button', () => {
-  renderSettings()
-  const toggleBtn = 
-    screen.queryByText('Switch to Light Mode') || 
-    screen.queryByText('Switch to Dark Mode')
-  expect(toggleBtn).toBeInTheDocument()
-})
-})
+  it('loads user data from API', async () => {
+    api.me.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          id: 1,
+          username: 'TestUser',
+          email: 'test@test.com',
+          phone_number: '+254712345678',
+          profile_pic_url: null,
+        },
+      }),
+    });
+
+    renderSettings();
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('TestUser')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('test@test.com')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('+254712345678')).toBeInTheDocument();
+    });
+  });
+
+  it('updates username input', async () => {
+    api.me.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          id: 1,
+          username: 'TestUser',
+          email: 'test@test.com',
+          phone_number: '+254712345678',
+          profile_pic_url: null,
+        },
+      }),
+    });
+
+    renderSettings();
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('TestUser')).toBeInTheDocument();
+    });
+
+    const input = screen.getByDisplayValue('TestUser');
+    fireEvent.change(input, { target: { value: 'NewUsername' } });
+    expect(input.value).toBe('NewUsername');
+  });
+
+  it('has save changes button', async () => {
+    api.me.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          id: 1,
+          username: 'TestUser',
+          email: 'test@test.com',
+          phone_number: '+254712345678',
+          profile_pic_url: null,
+        },
+      }),
+    });
+
+    renderSettings();
+
+    await waitFor(() => {
+      expect(screen.getByText('SAVE CHANGES')).toBeInTheDocument();
+    });
+  });
+
+  it('has theme toggle button', async () => {
+    api.me.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          id: 1,
+          username: 'TestUser',
+          email: 'test@test.com',
+          phone_number: '+254712345678',
+          profile_pic_url: null,
+        },
+      }),
+    });
+
+    renderSettings();
+
+    await waitFor(() => {
+      const toggleBtn = screen.getByText(/Switch to (Light|Dark) Mode/i);
+      expect(toggleBtn).toBeInTheDocument();
+    });
+  });
+});

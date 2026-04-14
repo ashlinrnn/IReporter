@@ -1,16 +1,19 @@
 import pytest
-from unittest.mock import patch, MagicMock
+import os
+from unittest.mock import patch
 from server.app import create_app
 from server.config import db
 from server.models import User, Record
 from server.utils.auth import create_token
 
+# Force in‑memory database for tests
+os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+
 @pytest.fixture(scope='module')
 def app():
-    """Create a Flask app instance for testing"""
-    test_config={
-        'TESTING':True,
-        'SQLALCHEMY_DATABASE_URI':'sqlite:///:memory:',
+    test_config = {
+        'TESTING': True,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
         'SECRET_KEY': 'test-secret-key'
     }
     app = create_app(test_config)
