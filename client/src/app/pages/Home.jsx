@@ -1,98 +1,142 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecords } from "../context/RecordsContext";
-import Map from "../components/Map";
-import { PlusCircle, X } from "lucide-react";
+import { PlusCircle, Flag, Search, CheckCircle, Clock } from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
-  const { records } = useRecords(); 
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState(null);
-  const [pinnedLocation, setPinnedLocation] = useState(null);
-  const [pinMode, setPinMode] = useState(false);
+  const { records, loading } = useRecords();
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-  const filtered = records.filter((i) =>
-    i.title?.toLowerCase().includes(search.toLowerCase())
+  const myRecords = records.filter(r => r.user_id === currentUser?.id);
+
+  const stats = {
+    total: myRecords.length,
+    redFlags: myRecords.filter(r => r.type === "red-flag").length,
+    investigating: myRecords.filter(r => r.status === "investigating" || r.status === "under investigation").length,
+    resolved: myRecords.filter(r => r.status === "resolved").length,
+  };
+
+  const statusColor = (status) => {
+    if (status === "red-flag" || status === "pending") return "bg-red-500/10 text-red-500 dark:text-red-400";
+    if (status === "investigating" || status === "under investigation") return "bg-orange-500/10 text-orange-500 dark:text-orange-400";
+    if (status === "resolved") return "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400";
+    return "bg-slate-500/10 text-slate-500";
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
+      Loading...
+    </div>
   );
 
-  const handleLocationPin = (coords) => {
-    if (!pinMode) return;
-    setPinnedLocation(coords);
-  };
-
-  const handleReportHere = () => {
-    navigate("/home/report", { state: { location: pinnedLocation } });
-  };
-
   return (
-    <div className="h-full w-full relative">
-      
+    <div className="space-y-8 max-w-4xl mx-auto">
 
-      <button
-        onClick={() => { setPinMode(!pinMode); setPinnedLocation(null); }}
-        className={`absolute top-4 right-4 z-[1000] flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-lg ${
-          pinMode
-            ? "bg-blue-600 text-white shadow-blue-500/30"
-            : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500"
-        }`}
-      >
-        <PlusCircle size={16} />
-        {pinMode ? "Click map to pin" : "Pin Incident"}
-      </button>
-
-      <Map
-        incidents={filtered}
-        onSelect={setSelected}
-        onLocationSelect={handleLocationPin}
-        selectedLocation={pinnedLocation}
-      />
-
-      {pinnedLocation && (
-        <div className="absolute bottom-4 right-4 z-[1000] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white p-4 rounded-2xl shadow-2xl w-64 space-y-3">
-          <div className="flex justify-between items-center">
-            <p className="font-black text-sm uppercase tracking-widest">Location Pinned</p>
-            <button onClick={() => setPinnedLocation(null)}>
-              <X size={16} className="text-slate-400 hover:text-slate-900 dark:hover:text-white" />
-            </button>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {pinnedLocation[0].toFixed(5)}, {pinnedLocation[1].toFixed(5)}
+      {/* GREETING */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">
+            Welcome, {currentUser?.username || "Citizen"} 👋
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 uppercase tracking-widest">
+            Your reporting dashboard
           </p>
-          <button
-            onClick={handleReportHere}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-sm flex items-center justify-center gap-2 transition-all"
-          >
-            <PlusCircle size={16} /> Report Here
-          </button>
         </div>
-      )}
+        <button
+          onClick={() => navigate("/home/report")}
+          className="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20"
+        >
+          <PlusCircle size={18}/> File Report
+        </button>
+      </div>
 
-      {selected && !pinnedLocation && (
-        <div className="absolute bottom-4 left-4 z-[1000] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white p-4 rounded-2xl shadow-2xl w-64 space-y-2">
-          <div className="flex justify-between items-center">
-            <h3 className="font-black">{selected.title}</h3>
-            <button onClick={() => setSelected(null)}>
-              <X size={16} className="text-slate-400 hover:text-slate-900 dark:hover:text-white" />
+      {/* STATS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+          <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Total Reports</p>
+          <p className="text-4xl font-black italic text-slate-900 dark:text-white">{String(stats.total).padStart(2, '0')}</p>
+        </div>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 border-b-4 border-b-red-500">
+          <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Red Flags</p>
+          <p className="text-4xl font-black italic text-slate-900 dark:text-white">{String(stats.redFlags).padStart(2, '0')}</p>
+        </div>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 border-b-4 border-b-orange-500">
+          <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Investigating</p>
+          <p className="text-4xl font-black italic text-slate-900 dark:text-white">{String(stats.investigating).padStart(2, '0')}</p>
+        </div>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 border-b-4 border-b-emerald-500">
+          <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Resolved</p>
+          <p className="text-4xl font-black italic text-slate-900 dark:text-white">{String(stats.resolved).padStart(2, '0')}</p>
+        </div>
+      </div>
+
+      {/* MY REPORTS */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-widest">My Reports</h2>
+
+        {myRecords.length === 0 ? (
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-12 text-center space-y-4">
+            <Flag size={40} className="mx-auto text-slate-300 dark:text-slate-600" />
+            <p className="text-slate-500 dark:text-slate-400 font-bold">You haven't filed any reports yet.</p>
+            <button
+              onClick={() => navigate("/home/report")}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl transition-all"
+            >
+              File Your First Report
             </button>
           </div>
-          <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${
-            selected.status === "red-flag"
-              ? "bg-red-500/10 text-red-500"
-              : selected.status === "investigating"
-              ? "bg-orange-500/10 text-orange-500"
-              : "bg-emerald-500/10 text-emerald-500"
-          }`}>
-            {selected.status}
-          </span>
-          <button
-            onClick={() => navigate(`/home/incident/${selected.id}`)}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-sm transition-all"
-          >
-            View Details
-          </button>
-        </div>
-      )}
+        ) : (
+          <div className="space-y-3">
+            {myRecords.map(record => (
+              <div
+                key={record.id}
+                onClick={() => navigate(`/home/incident/${record.id}`)}
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 cursor-pointer hover:border-blue-500 transition-all flex items-center justify-between gap-4"
+              >
+                <div className="space-y-1 flex-1 min-w-0">
+                  <p className="font-black text-slate-900 dark:text-white truncate">{record.title}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {new Date(record.created_at).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                    record.type === "red-flag"
+                      ? "bg-red-500/10 text-red-500 dark:text-red-400"
+                      : "bg-blue-500/10 text-blue-500 dark:text-blue-400"
+                  }`}>
+                    {record.type}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${statusColor(record.status)}`}>
+                    {record.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* QUICK LINKS */}
+      <div className="grid grid-cols-2 gap-4">
+        <button
+          onClick={() => navigate("/home/map")}
+          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 text-left hover:border-blue-500 transition-all space-y-2"
+        >
+          <Search size={24} className="text-blue-500" />
+          <p className="font-black text-slate-900 dark:text-white">Live Map</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">View all incidents on the map</p>
+        </button>
+        <button
+          onClick={() => navigate("/home/activity")}
+          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 text-left hover:border-blue-500 transition-all space-y-2"
+        >
+          <Clock size={24} className="text-orange-500" />
+          <p className="font-black text-slate-900 dark:text-white">Activity Feed</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Browse all community reports</p>
+        </button>
+      </div>
     </div>
   );
 }
