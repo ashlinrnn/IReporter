@@ -143,7 +143,7 @@ export default function Landing() {
       <section id="why" className="px-12 py-16 bg-gray-50">
 
         <h2 className={`text-4xl text-black text-center ${fancyFont} mb-10`}>
-          Why iReporter is Good
+          Why iReporter 
         </h2>
 
         <div className="grid md:grid-cols-3 gap-6">
