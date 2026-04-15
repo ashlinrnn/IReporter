@@ -86,7 +86,7 @@ export default function Landing() {
         </div>
 
         {/* RIGHT DIAGONAL IMAGE */}
-        <div className="relative h-[420px]">
+        <div className="relative h-105">
 
           <div className="absolute -bottom-5 -right-5 w-full h-full bg-blue-50 border border-gray-200 rounded-2xl" />
 
