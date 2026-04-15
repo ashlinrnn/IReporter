@@ -18,19 +18,15 @@ export function RecordsProvider({ children }) {
     const token = localStorage.getItem('token');
     if (!token) { setLoading(false); return; }
     api.getRecords()
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to fetch");
-        return res.json();
-      })
-      .then(data => {
-        setRecords(parseRecords(data));
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch records:", err);
-        setRecords([]);
-        setLoading(false);
-      });
+    .then(recordsList => {    
+      setRecords(Array.isArray(recordsList) ? recordsList : []);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error("Failed to fetch records:", err);
+      setRecords([]);
+      setLoading(false);
+    });
   };
 
   useEffect(() => { fetchRecords(); }, []);

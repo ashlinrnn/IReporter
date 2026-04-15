@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Map from '../components/Map';
-import { Camera, Video, Send, AlertCircle, CheckCircle } from 'lucide-react';
+import { Camera, Video, Send, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { useLocation } from "react-router-dom";
 import { api } from "../utils/api";
 import { useRecords } from "../context/RecordsContext";
@@ -15,11 +15,15 @@ const validate = (formData, location) => {
   return errors;
 };
 
+// File size limits (in bytes)
+const MAX_IMAGE_SIZE = 8 * 1024 * 1024; // 8 MB
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100 MB
+
 export default function ReportSubmission() {
   const routerState = useLocation();
   const [formData, setFormData] = useState({ title: '', description: '', type: 'red flag' });
   const [location, setLocation] = useState(routerState.state?.location || null);
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState([]); // store File objects
   const [video, setVideo] = useState(null);
   const [timestamp] = useState(new Date());
   const [errors, setErrors] = useState({});
@@ -28,6 +32,53 @@ export default function ReportSubmission() {
   const [submitError, setSubmitError] = useState("");
 
   const { addRecord } = useRecords();
+
+  // Remove image by index
+  const removeImage = (indexToRemove) => {
+    setImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  // Clear video
+  const clearVideo = () => {
+    setVideo(null);
+  };
+
+  // Handle image selection with size validation
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    const validFiles = [];
+    const oversized = [];
+
+    for (const file of files) {
+      if (file.size <= MAX_IMAGE_SIZE) {
+        validFiles.push(file);
+      } else {
+        oversized.push(file.name);
+      }
+    }
+
+    if (oversized.length > 0) {
+      setSubmitError(`${oversized.length} image(s) exceed 8MB limit and were not added.`);
+      setTimeout(() => setSubmitError(""), 5000);
+    }
+
+    if (validFiles.length > 0) {
+      setImages(prev => [...prev, ...validFiles]);
+    }
+  };
+
+  // Handle video selection with size validation
+  const handleVideoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size <= MAX_VIDEO_SIZE) {
+      setVideo(file);
+    } else {
+      setSubmitError(`Video "${file.name}" exceeds 100MB limit.`);
+      setTimeout(() => setSubmitError(""), 5000);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,26 +90,28 @@ export default function ReportSubmission() {
 
     try {
       const res = await api.createRecord({
-      title: formData.title,
-      description: formData.description,
-      type: formData.type,
-      latitude: location[0],
-      longitude: location[1],
-    });
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        latitude: location[0],
+        longitude: location[1],
+      });
 
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.message || "Failed to submit report");
-    }
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to submit report");
+      }
 
-    const json = await res.json();
-    const record_id = json.data?.id || json.id; 
+      const json = await res.json();
+      const newRec = json.data;
+      addRecord(newRec);
+      const record_id = json.data?.id || json.id;
 
-    for (const img of images) {
-      await api.uploadImage(record_id, img);
-    }
-    if (video) await api.uploadVideo(record_id, video);
-    setSubmitted(true);
+      for (const img of images) {
+        await api.uploadImage(record_id, img);
+      }
+      if (video) await api.uploadVideo(record_id, video);
+      setSubmitted(true);
     } catch (err) {
       setSubmitError(err.message || "Submission failed. Please try again.");
     } finally {
@@ -133,17 +186,50 @@ export default function ReportSubmission() {
             {errors.description && <p className="text-red-400 text-xs mt-1 pl-1 flex items-center gap-1"><AlertCircle size={12}/>{errors.description}</p>}
           </div>
 
-          <div className="flex gap-4">
-            <label className="flex-1 flex items-center justify-center gap-2 p-4 bg-slate-100 dark:bg-slate-900 rounded-xl cursor-pointer hover:bg-blue-500/10 transition-all border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400">
+          {/* Image upload with preview and removal */}
+          <div>
+            <label className="flex items-center justify-center gap-2 p-4 bg-slate-100 dark:bg-slate-900 rounded-xl cursor-pointer hover:bg-blue-500/10 transition-all border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400">
               <Camera size={20}/>
-              <span className="text-xs font-bold">{images.length > 0 ? `${images.length} image(s)` : 'IMAGES'}</span>
-              <input type="file" multiple hidden accept="image/*" onChange={e => setImages([...e.target.files])} />
+              <span className="text-xs font-bold">{images.length > 0 ? `${images.length} image(s) selected` : 'SELECT IMAGES'}</span>
+              <input type="file" multiple hidden accept="image/*" onChange={handleImageChange} />
             </label>
-            <label className="flex-1 flex items-center justify-center gap-2 p-4 bg-slate-100 dark:bg-slate-900 rounded-xl cursor-pointer hover:bg-blue-500/10 transition-all border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400">
+            {images.length > 0 && (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {images.map((img, idx) => (
+                  <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <img src={URL.createObjectURL(img)} alt={`preview ${idx}`} className="w-full h-20 object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-80 hover:opacity-100 transition-all"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Video upload with removal */}
+          <div>
+            <label className="flex items-center justify-center gap-2 p-4 bg-slate-100 dark:bg-slate-900 rounded-xl cursor-pointer hover:bg-blue-500/10 transition-all border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400">
               <Video size={20}/>
-              <span className="text-xs font-bold">{video ? '✓ VIDEO' : 'VIDEO'}</span>
-              <input type="file" hidden accept="video/*" onChange={e => setVideo(e.target.files[0])} />
+              <span className="text-xs font-bold">{video ? 'VIDEO SELECTED' : 'SELECT VIDEO'}</span>
+              <input type="file" hidden accept="video/*" onChange={handleVideoChange} />
             </label>
+            {video && (
+              <div className="mt-3 flex items-center justify-between bg-slate-100 dark:bg-slate-900 p-2 rounded-lg">
+                <span className="text-xs truncate">{video.name}</span>
+                <button
+                  type="button"
+                  onClick={clearVideo}
+                  className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            )}
           </div>
 
           {submitError && (

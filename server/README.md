@@ -186,7 +186,7 @@ pytest server/test/test_user_specific_routes.py -v
 - Run with coverage:
 
 ```bash
-pytest server/test/test_user_specific_routes.py -v
+pytest --cov=server
 ```
 
 ## Backend (Render)

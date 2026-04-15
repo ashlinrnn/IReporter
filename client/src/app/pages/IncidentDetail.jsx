@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ArrowLeft, Clock, User, MapPin, Pencil, Trash2, Save, X } from 'lucide-react';
 import { api } from "../utils/api";
+import { reverseGeocode } from '../utils/geocode';
 
 const STATUS_ORDER = ['pending', 'under investigation', 'resolved'];
 
@@ -21,6 +22,7 @@ export default function IncidentDetail() {
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
   const [record, setRecord] = useState(null);
+  const [placeName, setPlaceName] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({ title: '', description: '' });
@@ -42,6 +44,12 @@ export default function IncidentDetail() {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    if (record?.latitude && record?.longitude) {
+      reverseGeocode(record.latitude, record.longitude).then(setPlaceName);
+    }
+  }, [record]);
 
   if (loading) {
     return (
@@ -93,10 +101,8 @@ export default function IncidentDetail() {
     </div>
   )}
 
-  // Map status to timeline index (ignore 'rejected' for now – show as 'Resolved' maybe, but timeline will be incomplete)
   let currentIndex = STATUS_ORDER.indexOf(record.status);
   if (currentIndex === -1 && record.status === 'rejected') {
-    // treat rejected as resolved? Or show nothing. We'll set to last step.
     currentIndex = STATUS_ORDER.length - 1;
   }
 
@@ -218,14 +224,24 @@ export default function IncidentDetail() {
         ) : (
           <h2 className="text-2xl font-black text-slate-900 dark:text-white">{record.title}</h2>
         )}
-        <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm">
+        <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-base">
           <span className="flex items-center gap-1">
-            <Clock size={14} />
+            <Clock size={16} />
             {new Date(record.created_at).toLocaleString()}
           </span>
-          <span className="flex items-center gap-1">
-            <User size={14} />
-            {record.user?.username || 'Unknown'}
+          <span className="flex items-center gap-2">
+            {record.user?.profile_pic_url ? (
+              <img 
+                src={record.user.profile_pic_url} 
+                alt={record.user.username}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <User size={20} />
+            )}
+            <span className="font-medium text-slate-700 dark:text-slate-200">
+              {record.user?.username || 'Unknown'}
+            </span>
           </span>
         </div>
       </div>
@@ -251,7 +267,9 @@ export default function IncidentDetail() {
             <MapPin size={18} />
             <h3 className="text-sm font-black uppercase tracking-widest">Location</h3>
           </div>
-          <p className="text-slate-900 dark:text-white font-mono text-sm">{record.latitude}, {record.longitude}</p>
+          <p className="text-slate-900 dark:text-white font-mono text-sm">
+            {placeName || (record.latitude && record.longitude ? "Loading location..." : "No location provided")}
+          </p>
           <div className="h-48 rounded-xl overflow-hidden">
             <MapContainer center={[record.latitude, record.longitude]} zoom={14} className="h-full w-full" zoomControl={false}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
