@@ -11,8 +11,13 @@
 
 :root {
   font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #0f172a;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .dark {
   color-scheme: dark;
+  background-color: #020c1b;
+  color: #f8fafc;
 }

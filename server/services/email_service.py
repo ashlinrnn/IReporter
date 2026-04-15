@@ -15,9 +15,9 @@ def send_status_update_email(recipient_email, recipient_name, record_title, new_
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
     # Prepare email content
-    subject = f"Update on your iReporter report: '{record_title}'"
+    subject = f"Update on your IReporter report: '{record_title}'"
     sender = SendSmtpEmailSender(
-        name="iReporter Team",
+        name="IReporter Team",
         email=os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@ireporter.com')
     )
     to_emails = [SendSmtpEmailTo(email=recipient_email, name=recipient_name)]
@@ -27,7 +27,7 @@ def send_status_update_email(recipient_email, recipient_name, record_title, new_
         <body>
             <p>Hello {recipient_name},</p>
             <p>ℹ️ The status of your report <strong>'{record_title}'</strong> has been updated to: <strong>{new_status}</strong>.</p>
-            <p>Thank you for using iReporter.</p>
+            <p>Thank you for using IReporter.</p>
         </body>
     </html>
     """
@@ -52,19 +52,19 @@ def send_password_reset_code_email(recipient_email, recipient_name, code):
     configuration.api_key['api-key'] = os.environ.get('BREVO_API_KEY')
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
-    subject = "Your iReporter password reset code"
-    sender = {"name": "iReporter Team", "email": os.environ.get('MAIL_DEFAULT_SENDER')}
+    subject = "Your IReporter password reset code"
+    sender = {"name": "IReporter Team", "email": os.environ.get('MAIL_DEFAULT_SENDER')}
     to_emails = [{"email": recipient_email, "name": recipient_name}]
 
     html_content = f"""
     <html>
         <body>
             <p>Hello {recipient_name},</p>
-            <p>We received a request to reset your iReporter password.</p>
+            <p>We received a request to reset your IReporter password.</p>
             <p>Your verification code is: <strong>{code}</strong></p>
             <p>This code will expire in 10 minutes.</p>
             <p>If you didn't request this, please ignore this email.</p>
-            <p>Thank you,<br>iReporter Team</p>
+            <p>Thank you,<br>IReporter Team</p>
         </body>
     </html>
     """
