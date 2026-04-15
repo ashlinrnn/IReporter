@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecords } from "../context/RecordsContext";
-import { PlusCircle, Flag, Search, CheckCircle, Clock } from "lucide-react";
+import { PlusCircle, Flag, Search, Clock, Trash2 } from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
-  const { records, loading } = useRecords();
+  const { records, loading, deleteRecord } = useRecords();
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
   const myRecords = records.filter(r => r.user_id === currentUser?.id);
@@ -18,10 +17,17 @@ export default function Home() {
   };
 
   const statusColor = (status) => {
-    if (status === "red-flag" || status === "pending") return "bg-red-500/10 text-red-500 dark:text-red-400";
+    if (status === "pending") return "bg-red-500/10 text-red-500 dark:text-red-400";
     if (status === "investigating" || status === "under investigation") return "bg-orange-500/10 text-orange-500 dark:text-orange-400";
     if (status === "resolved") return "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400";
+    if (status === "rejected") return "bg-slate-500/10 text-slate-500";
     return "bg-slate-500/10 text-slate-500";
+  };
+
+  const handleDelete = (e, record) => {
+    e.stopPropagation(); 
+    if (!window.confirm(`Delete "${record.title}"? This cannot be undone.`)) return;
+    deleteRecord(record.id);
   };
 
   if (loading) return (
@@ -111,6 +117,17 @@ export default function Home() {
                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${statusColor(record.status)}`}>
                     {record.status}
                   </span>
+
+                  {/* DELETE — only when pending */}
+                  {record.status === "pending" && (
+                    <button
+                      onClick={(e) => handleDelete(e, record)}
+                      className="p-2 rounded-xl bg-red-500/10 text-red-500 dark:text-red-400 hover:bg-red-500/20 transition-all"
+                      title="Delete report"
+                    >
+                      <Trash2 size={14}/>
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -126,7 +143,7 @@ export default function Home() {
         >
           <Search size={24} className="text-blue-500" />
           <p className="font-black text-slate-900 dark:text-white">Live Map</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">View all incidents on the map</p>
+          <p className="text-xs text-slate-500 dark:text-slate.400">View all incidents on the map</p>
         </button>
         <button
           onClick={() => navigate("/home/activity")}

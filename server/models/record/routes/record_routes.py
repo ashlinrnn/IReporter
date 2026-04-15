@@ -92,7 +92,7 @@ class AdminRecordResource(Resource):
                 print(f"Email failed: {e}")
             
             if record.user.phone_number:
-                message=f"ℹ️ iReporter: Status of report '{record.title}' changed to '{new_status}'."
+                message=f"ℹ️ IReporter: Status of report '{record.title}' changed to '{new_status}'."
                 sms_service.send_sms(record.user.phone_number, message)
             else: print(f'SMS not sent: User {record.user.username} has no phone number')
             
