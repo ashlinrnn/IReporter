@@ -27,6 +27,9 @@ export default function IncidentDetail() {
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({ title: '', description: '' });
   const [deleting, setDeleting] = useState(false);
+  const [newImages, setNewImages] = useState([]);
+  const [newVideo, setNewVideo] = useState(null);
+  const [previewUrls, setPreviewUrls] = useState([]);
 
   useEffect(() => {
     api.getRecord(id)
@@ -108,13 +111,35 @@ export default function IncidentDetail() {
 
   const handleEdit = () => {
     setEditData({ title: record.title, description: record.description });
+    setNewImages([]);
+    setNewVideo(null);
+    setPreviewUrls([]);
     setEditing(true);
   };
 
   const handleSave = async () => {
-    await editRecord(record.id, editData);
-    setRecord({ ...record, ...editData });
-    setEditing(false);
+    try {
+      await editRecord(record.id, editData);
+      
+      for (const img of newImages) {
+        await api.uploadImage(record.id, img);
+      }
+      
+      if (newVideo) {
+        await api.uploadVideo(record.id, newVideo);
+      }
+      
+      const refreshed = await api.getRecord(record.id);
+      const data = await refreshed.json();
+      setRecord(data.data);
+      
+      setEditing(false);
+      setNewImages([]);
+      setNewVideo(null);
+      setPreviewUrls([]);
+    } catch (err) {
+      console.error("Save failed", err);
+    }
   };
 
   const handleDelete = async () => {
@@ -259,6 +284,75 @@ export default function IncidentDetail() {
           <p className="text-slate-900 dark:text-white leading-relaxed">{record.description}</p>
         )}
       </div>
+
+      {editing && (
+        <div className="space-y-4 mt-4">
+          {/* Add Images */}
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">
+              Add Images (optional)
+            </label>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => {
+                const files = Array.from(e.target.files);
+                setNewImages(prev => [...prev, ...files]);
+                // Create preview URLs
+                const urls = files.map(f => URL.createObjectURL(f));
+                setPreviewUrls(prev => [...prev, ...urls]);
+              }}
+              className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            {previewUrls.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {previewUrls.map((url, idx) => (
+                  <div key={idx} className="relative">
+                    <img src={url} alt="preview" className="w-full h-20 object-cover rounded-lg" />
+                    <button
+                      onClick={() => {
+                        setPreviewUrls(prev => prev.filter((_, i) => i !== idx));
+                        setNewImages(prev => prev.filter((_, i) => i !== idx));
+                      }}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Add Video */}
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">
+              Add Video (optional, max 100MB)
+            </label>
+            <input
+              type="file"
+              accept="video/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) setNewVideo(file);
+              }}
+              className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            {newVideo && (
+              <div className="mt-2 flex items-center justify-between bg-slate-100 dark:bg-slate-900 p-2 rounded-lg">
+                <span className="text-xs truncate">{newVideo.name}</span>
+                <button
+                  onClick={() => setNewVideo(null)}
+                  className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       
       {record.latitude && record.longitude && (
